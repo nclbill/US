@@ -1,12 +1,55 @@
-# UserSpice5
- +UserSpice 5 is a tool for quickly developing PHP applications. 
- +
- +Ideally the git repository is for tracking changes.  All downloads should probably go through UserSpice.com where they are properly packaged for installtion.
- +
- +What makes UserSpice different from almost any other PHP User Management Framework is that it has been designed from the beginning to get out of your way so you can spend your time working on your project. Other systems may force you to use their rewriting rules, template engines, frameworks, etc. UserSpice doesn't. You can use as much of it or as little as you choose. It just sits there and does its job.
- +
- +In most cases, UserSpice can control access to your existing pages with a single line of code. From there, we provide an incredible set of PHP Classes and Functions that you can choose to use or not use. Don't like the look? It's built using Bootstrap. You can change the look and feel of your site in seconds with a new css file and some well-documented tweaks.
- +
- +Most importantly, UserSpice is constantly in development. It's constantly getting better and more secure while maintaining the goal of getting out of the way. As additional major features are added, they will be in the form of plugins to keep things modular.
- +
- +So you can get on with the business of designing your project. All while being Bootstrap compatible so you can easily change the look and feel of your project. The goal of UserSpice is to strike a balance of being feature-rich without being bloated.
+# Projet basé sur UserSpice 5.8.1 – Collaboration avec ChatGPT
+
+## 🎯 Objectif du dépôt
+
+Ce dépôt sert de **base de travail avec ChatGPT**.  
+Il est construit sur le framework **UserSpice 5.8.1** (non modifié dans sa logique de gestion des utilisateurs) et contient des **ajouts et adaptations spécifiques** pour un projet de gestion de commandes.
+
+> 💬 Le but n'est **pas de documenter UserSpice**, mais de fournir un contexte clair pour que ChatGPT puisse m'assister efficacement dans le développement.
+
+---
+
+## 📦 Contenu
+
+### 📁 Pages personnalisées ajoutées
+
+Le projet comprend plusieurs **nouvelles pages PHP** créées pour la saisie et la gestion des commandes :
+
+- `saisie.php` – Saisie des informations d’un produit à réserver
+- `modifs.php` – Modification des données existantes
+- `commandes.php` – Page de création d'une commande
+- `commandes_traitement.php` – Traitement des commandes
+- `commandes_suivi.php` – Suivi des commandes en cours
+- `collaborateurs.php` – Gestion des collaborateurs autorisés
+
+---
+
+## 🗄️ Base de données
+
+Un fichier SQL d’export de la base est inclus, contenant **seulement la structure** (aucune donnée personnelle).
+
+### 📊 Tables personnalisées ajoutées au schéma :
+
+- `produits` – Produits commandables
+- `commandes` – Enregistrements des commandes effectuées
+- `acheteurs` – Données client associées aux commandes
+- `collaborateurs` – Gestion des utilisateurs autorisés
+
+---
+
+## 🔐 Sécurité
+
+- **Aucune donnée sensible** n’est incluse
+- La base de données contient **la structure uniquement**
+- L'intégration Git ignore les fichiers temporaires ou sensibles
+
+---
+
+## 🧠 Pourquoi ce dépôt ?
+
+Ce projet sert uniquement à **fournir un environnement de travail clair à ChatGPT**, afin de faciliter :
+- Le débogage
+- L’écriture de code adapté à la structure réelle
+- L’évolution de pages spécifiques au projet
+
+---
