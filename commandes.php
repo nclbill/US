@@ -305,6 +305,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 "version" => $version,
                 "couleur" => $couleur,
                 "entrepot" => $entrepot,
+
                 "id_client_revendeur" => $id_client_revendeur,
                 "Nom_revendeur" => $Nom_revendeur,
                 "nom_acheteur" => $nom_acheteur,
@@ -317,7 +318,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 "status_commande" => "Reserve"
 
             ]);
-            $db->insert('produit', [
+            $db->insert('produits', [
                 "status" => "Reserve"
             ]);
 

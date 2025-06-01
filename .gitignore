@@ -1,4 +1,32 @@
+# Fichiers de logs et temporaires
 *.log
+*.tmp
+*.bak
+
+# Archives
+*.zip
+
+# Dossiers à ne pas versionner
+/vendor/
+/uploads/
+/files/
+/node_modules/
+
+# Fichiers de configuration sensibles
+.env
+
+# Fichiers système macOS / Windows
+.DS_Store
+Thumbs.db
+
+# Cache et sessions (souvent dans ces dossiers, adapter selon UserSpice)
+cache/
+sessions/
+
+# Fichiers de sauvegarde de l’éditeur (exemple)
+*~
+
+# Si tu as des fichiers générés (ex: compilés, assets, etc.) à exclure, ajouter ici*.log
 *.tmp
 *.bak
 *.zip
