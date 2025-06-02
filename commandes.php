@@ -277,7 +277,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
             $mime = finfo_file($finfo, $_FILES[$fileField]['tmp_name']);
             finfo_close($finfo);
-            if (!in_array($mime, ['image/jpeg', 'image/png', 'application/pdf', ...])) {
+            if (!in_array($mime, ['image/jpeg', 'image/png', 'application/pdf'])) {
                 die("Fichier non conforme");
             }
             // Vérification du type de fichier
@@ -302,6 +302,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
     }
 
+
+
+
+
+
+
+    // Nettoyage des réservations expirées avant de chercher un produit
+    $expirationMinutes = 10; // Durée limite d'une réservation temporaire
+    $expirationTime = date('Y-m-d H:i:s', strtotime("-{$expirationMinutes} minutes"));
+
+    $db->query("UPDATE produits SET status = 'Disponible', date_reservation = NULL
+                WHERE status = 'Reserve' AND date_reservation IS NOT NULL AND date_reservation < ?",
+                [$expirationTime]);
+
+
+
+
+
     $produit = $db->query("SELECT id FROM produits WHERE
         categorie = ? AND
         marque = ? AND
@@ -320,37 +338,36 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     // Si pas d'erreur, insertion en base
     if (empty($statusMsg)) {
-        try {
-            $db->insert('commandes', [
-              "produit_id" => $produit_id,
+        if ($produit) {
+            try {
+                $db->insert('commandes', [
+                    "produit_id" => $produit_id,
+                    "id_client_revendeur" => $id_client_revendeur,
+                    "Nom_revendeur" => $Nom_revendeur,
+                    "nom_acheteur" => $nom_acheteur,
+                    "prenom_acheteur" => $prenom_acheteur,
+                    "tel_acheteur" => $tel_acheteur,
+                    "ville_acheteur" => $ville_acheteur,
+                    "cin_pass_recto_acheteur" => $uploadedFiles['cin_pass_recto_acheteur'] ?? null,
+                    "cin_pass_verso_acheteur" => $uploadedFiles['cin_pass_verso_acheteur'] ?? null,
+                    "date_commande" => date("Y-m-d H:i:s"),
+                    "status_commande" => "Reserve"
+                ]);
 
+                // Réserver le produit
+                $db->update('produits', $produit_id, [
+                    "status" => "Reserve"
+                ]);
 
-                "id_client_revendeur" => $id_client_revendeur,
-                "Nom_revendeur" => $Nom_revendeur,
-                "nom_acheteur" => $nom_acheteur,
-                "prenom_acheteur" => $prenom_acheteur,
-                "tel_acheteur" => $tel_acheteur,
-                "ville_acheteur" => $ville_acheteur,
-                "cin_pass_recto_acheteur" => $uploadedFiles['cin_pass_recto_acheteur'] ?? null,
-                "cin_pass_verso_acheteur" => $uploadedFiles['cin_pass_verso_acheteur'] ?? null,
-                "date_commande" => date("Y-m-d H:i:s"),
-                "status_commande" => "Reserve"
-
-            ]);
-            // Réserver le produit
-            $db->update('produits', $produit_id, [
-                "status" => "Reserve"
-            ]);
-
+                $statusMsg = "Commande enregistrée avec succès.";
+            } catch (Exception $e) {
+                $statusMsg = "Échec de l'enregistrement : " . $e->getMessage();
+            }
         } else {
             die("Produit non trouvé.");
         }
-
-            $statusMsg = "Commande enregistrée avec succès.";
-        } catch (Exception $e) {
-            $statusMsg = "Échec de l'enregistrement : " . $e->getMessage();
         }
-    } // fin du if POST
+    } // fin du if (empty)
 
 ?>
 </div>
