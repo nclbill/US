@@ -266,26 +266,51 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Vérification et traitement des fichiers
     $uploadedFiles = [];
 
+    // Initialiser le FileInfo
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+
     foreach (['cin_pass_recto_acheteur', 'cin_pass_verso_acheteur'] as $fileField) {
         if (isset($_FILES[$fileField]) && $_FILES[$fileField]['error'] === UPLOAD_ERR_OK) {
-            $fileName = str_replace(' ', '_', basename($_FILES[$fileField]['name']));
+
+            $fileTmpPath = $_FILES[$fileField]['tmp_name'];
+
+            //$fileName = str_replace(' ', '_', basename($_FILES[$fileField]['name']));
+            $fileName = preg_replace("/[^A-Za-z0-9_\-\.]/", '_', basename($_FILES[$fileField]['name']));
             $fileType = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
             $fileSize = $_FILES[$fileField]['size'];
             $targetFilePath = $targetDir . time() . "_" . uniqid() . "_" . $fileName;
 
-            // Vérification MIME côté serveur protection contre les exécutables déguisés
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mime = finfo_file($finfo, $_FILES[$fileField]['tmp_name']);
-            finfo_close($finfo);
-            if (!in_array($mime, ['image/jpeg', 'image/png', 'application/pdf', ...])) {
-                die("Fichier non conforme");
-            }
+
+                    // Vérification du type MIME réel
+                    $mimeType = $finfo->file($fileTmpPath);
+                    $allowedMimeTypes = [
+                        'image/jpeg' => 'jpg',
+                        'image/png' => 'png',
+                        'image/gif' => 'gif',
+                        'application/pdf' => 'pdf',
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
+                        ];
+
             // Vérification du type de fichier
-            if (!in_array($fileType, $allowedTypes)) {
+            if (!in_array($fileType, $allowedTypes) || !in_array($mimeType, array_keys($allowedMimeTypes))) {
                 $statusMsg = "Type de fichier non autorisé pour : " . $fileField;
                 break;
             }
+            // Vérification de la cohérence extension / MIME
+            if ($allowedMimeTypes[$mimeType] !== $fileType) {
+                $statusMsg = "Extension de fichier invalide pour le contenu réel : " . $fileField;
+                break;
+            }
+          //  vérification du contenu (si images)
 
+          //Pour éviter qu’un fichier contenant du PHP ne soit renommé .jpg, tu peux faire un test d’image si l’extension est censée en être une :
+          if (in_array($fileType, ['jpg', 'jpeg', 'png', 'gif'])) {
+              if (!@getimagesize($fileTmpPath)) {
+                  $statusMsg = "Le fichier image est invalide : " . $fileField;
+                  break;
+              }
+          }
+            }
             // Vérification de la taille du fichier
             if ($fileSize > $maxFileSize) {
                 $statusMsg = "Le fichier est trop volumineux pour : " . $fileField;
@@ -341,7 +366,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $db->update('produits', $produit_id, [
                 "status" => "Reserve"
             ]);
-
+          } catch (Exception $e) {
+     $statusMsg = "Échec de l'enregistrement : " . $e->getMessage();
+ }
         } else {
             die("Produit non trouvé.");
         }
