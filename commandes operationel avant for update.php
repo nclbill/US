@@ -319,60 +319,55 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
 
-                try {
-                    // Démarrer la transaction
-                    $db->query("START TRANSACTION");
 
-                    // Sélectionner le produit disponible avec verrouillage
-                    $stmt = $db->query("SELECT id FROM produits WHERE
-                        categorie = ? AND
-                        marque = ? AND
-                        modele = ? AND
-                        version = ? AND
-                        couleur = ? AND
-                        entrepot = ? AND
-                        status = 'Disponible'
-                        ORDER BY id ASC
-                        LIMIT 1
-                        FOR UPDATE", [$categorie, $marque, $modele, $version, $couleur, $entrepot]);
+    $produit = $db->query("SELECT id FROM produits WHERE
+        categorie = ? AND
+        marque = ? AND
+        modele = ? AND
+        version = ? AND
+        couleur = ? AND
+        entrepot = ?",
+        [$categorie, $marque, $modele, $version, $couleur, $entrepot])->first();
 
-                    $produit = $stmt->first();
+    if ($produit) {
+        $produit_id = $produit->id;
+    } else {
+        // Gérer le cas où aucun produit correspondant n’est trouvé
+        die("Produit non trouvé.");
+    }
 
-                    if (!$produit) {
-                        $db->query("ROLLBACK");
-                        die("Aucun produit disponible ne correspond à ces critères.");
-                    }
+    // Si pas d'erreur, insertion en base
+    if (empty($statusMsg)) {
+        if ($produit) {
+            try {
+                $db->insert('commandes', [
+                    "produit_id" => $produit_id,
+                    "id_client_revendeur" => $id_client_revendeur,
+                    "Nom_revendeur" => $Nom_revendeur,
+                    "nom_acheteur" => $nom_acheteur,
+                    "prenom_acheteur" => $prenom_acheteur,
+                    "tel_acheteur" => $tel_acheteur,
+                    "ville_acheteur" => $ville_acheteur,
+                    "cin_pass_recto_acheteur" => $uploadedFiles['cin_pass_recto_acheteur'] ?? null,
+                    "cin_pass_verso_acheteur" => $uploadedFiles['cin_pass_verso_acheteur'] ?? null,
+                    "date_commande" => date("Y-m-d H:i:s"),
+                    "status_commande" => "Reserve"
+                ]);
 
-                    $produit_id = $produit->id;
+                // Réserver le produit
+                $db->update('produits', $produit_id, [
+                    "status" => "Reserve",
+                    "date_reservation" => date("Y-m-d H:i:s") // Ajout de la date de réservation pour suivi et expiration
+                ]);
 
-                    // Insérer la commande
-                    $db->insert('commandes', [
-                        "produit_id" => $produit_id,
-                        "id_client_revendeur" => $id_client_revendeur,
-                        "Nom_revendeur" => $Nom_revendeur,
-                        "nom_acheteur" => $nom_acheteur,
-                        "prenom_acheteur" => $prenom_acheteur,
-                        "tel_acheteur" => $tel_acheteur,
-                        "ville_acheteur" => $ville_acheteur,
-                        "cin_pass_recto_acheteur" => $uploadedFiles['cin_pass_recto_acheteur'] ?? null,
-                        "cin_pass_verso_acheteur" => $uploadedFiles['cin_pass_verso_acheteur'] ?? null,
-                        "date_commande" => date("Y-m-d H:i:s"),
-                        "status_commande" => "Reserve"
-                    ]);
-
-                    // Mettre à jour le statut du produit
-                    $db->update('produits', $produit_id, [
-                        "status" => "Reserve",
-                        "date_reservation" => date("Y-m-d H:i:s")
-                    ]);
-
-                    // Valider la transaction
-                    $db->query("COMMIT");
-                    $statusMsg = "Commande enregistrée avec succès.";
-                } catch (Exception $e) {
-                    $db->query("ROLLBACK");
-                    $statusMsg = "Erreur : " . $e->getMessage();
-                }
+                $statusMsg = "Commande enregistrée avec succès.";
+            } catch (Exception $e) {
+                $statusMsg = "Échec de l'enregistrement : " . $e->getMessage();
+            }
+        } else {
+            die("Produit non trouvé.");
+        }
+        }
     } // fin du if (empty)
 
 ?>
