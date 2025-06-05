@@ -366,9 +366,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $db->update('produits', $produit_id, [
                 "status" => "Reserve"
             ]);
-          } catch (Exception $e) {
-     $statusMsg = "Échec de l'enregistrement : " . $e->getMessage();
- }
+         }
         } else {
             die("Produit non trouvé.");
         }

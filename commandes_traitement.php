@@ -1,84 +1,90 @@
 <?php
-
 require_once 'users/init.php';
-require_once $abs_us_root . $us_url_root . 'users/includes/template/prep.php';
-if (!securePage($_SERVER['PHP_SELF'])) { die(); }
-$searchTerm = Input::get('search');
-$mode = Input::get('mode');
+require_once $abs_us_root.$us_url_root.'users/includes/template/prep.php';
 
-if (!empty($_GET['mode'])) {
 
-	} else {
-	}
-if (!empty($_GET['search'])) {
-	$query = $db->query("SELECT * FROM commandes WHERE status_commande = ? AND (id = ? OR Nom_revendeur = ?)",['En Attente de traitement',$searchTerm,$searchTerm]);
-
-} else {
-    $query = $db->query("SELECT * FROM commandes WHERE status_commande = ?", ['En Attente de traitement']);
+if (!securePage($_SERVER['PHP_SELF'])) {
+    die("Accès interdit !");
 }
 
-$count = $query->count();
-$results = $query->results();
+
+// Vérification d'un privilège admin simple
+//if (!hasPerm([2], $user->data()->id)) {
+  //  die("Accès refusé.");
+//}
+
+$db = DB::getInstance();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $cmd_id = $_POST['commande_id'] ?? null;
+    if (isset($_POST['valider'])) {
+        $db->update('commandes', $cmd_id, ['status_commande' => 'Validee']);
+        $status = 'Commande validée.';
+    } elseif (isset($_POST['annuler'])) {
+        $commande = $db->get('commandes', ['id', '=', $cmd_id])->first();
+        $db->update('produits', $commande->produit_id, ['status' => 'Disponible', 'date_reservation' => null]);
+        $db->delete('commandes', $cmd_id);
+        $status = 'Commande annulée.';
+    } elseif (isset($_POST['modifier_delai'])) {
+        $nouveau = (int) $_POST['delai'] ?? 24;
+        $commande = $db->get('commandes', ['id', '=', $cmd_id])->first();
+        $db->update('produits', $commande->produit_id, ['delai_reservation' => $nouveau]);
+        $status = 'Délai modifié.';
+    }
+}
+
+$commandes = $db->query(
+    "SELECT c.*, p.categorie, p.marque, p.modele, p.version, p.couleur, p.entrepot, p.date_reservation, p.delai_reservation
+     FROM commandes c
+     JOIN produits p ON c.produit_id = p.id
+     ORDER BY c.date_commande DESC"
+)->results();
+
+print_r($db->results());
 ?>
-
-<div class="row">
-    <div class="col-sm-12">
-        <h1 style="color:red;">Traitement de commandes</h1>
-        <h3>Rechercher Une commande</h3>
-        <form action="" method="get">
-            <label for="">Entrez Le Numéro De Commande ou le Nom du Revendeur</label>
-            <div class="input-group">
-                <input class="form-control" type="text" name="search" value="<?=htmlspecialchars($searchTerm ?? '')?>" autofocus placeholder="Search Here!">
-                <input class="btn btn-success" type="submit" name="submit" value="Go!">
-            </div>
-        </form>
-    </div>
+<div class="container">
+  <h2>Traitement des commandes</h2>
+  <?php if (!empty($status)): ?><p style="color:green;"><?= $status ?></p><?php endif; ?>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Commande</th>
+        <th>Statut</th>
+        <th>Date</th>
+        <th>Délai</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php foreach ($commandes as $cmd): ?>
+        <tr>
+          <td><?= e($cmd->categorie . ' ' . $cmd->marque . ' ' . $cmd->modele . ' ' . $cmd->version . ' ' . $cmd->couleur) ?></td>
+          <td><?= e($cmd->status_commande) ?></td>
+          <td><?= e($cmd->date_commande) ?></td>
+          <td>
+            <form method="POST" style="display:inline-flex; gap:5px;">
+              <input type="hidden" name="commande_id" value="<?= $cmd->id ?>">
+              <input type="number" name="delai" value="<?= e($cmd->delai_reservation ?? 24) ?>" min="1" max="168">
+              <button name="modifier_delai" class="btn btn-sm btn-secondary">Modifier</button>
+            </form>
+          </td>
+          <td>
+            <?php if ($cmd->status_commande === 'Reserve'): ?>
+              <form method="POST" style="display:inline;">
+                <input type="hidden" name="commande_id" value="<?= $cmd->id ?>">
+                <button name="valider" class="btn btn-sm btn-success">Valider</button>
+              </form>
+              <form method="POST" style="display:inline;">
+                <input type="hidden" name="commande_id" value="<?= $cmd->id ?>">
+                <button name="annuler" class="btn btn-sm btn-danger">Annuler</button>
+              </form>
+            <?php else: ?>
+              -
+            <?php endif; ?>
+          </td>
+        </tr>
+      <?php endforeach; ?>
+    </tbody>
+  </table>
 </div>
-
-<div class="row">
-    <div class="col-sm-12">
-        <br>
-        <h2>Vous avez <?=$count?> Commande<?=($count != 1) ? "s" : ""?></h2>
-
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Numéro</th>
-                    <th>Date</th>
-                    <th>Revendeur</th>
-										<th>Non client</th>
-										<th>Prenom client</th>
-                    <th>Marque</th>
-                    <th>Modèle</th>
-                    <th>Version</th>
-                    <th>Couleur</th>
-                    <th>Entrepôt</th>
-                    <th>Status</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($results as $r): ?>
-                    <tr>
-                        <td><?=htmlspecialchars($r->id)?></td>
-                        <td><?=htmlspecialchars($r->date_commande)?></td>
-                        <td><?=htmlspecialchars($r->Nom_revendeur)?></td>
-												<td><?=htmlspecialchars($r->nom_acheteur)?></td>
-												<td><?=htmlspecialchars($r->prenom_acheteur)?></td>
-                        <td><?=htmlspecialchars($r->marque)?></td>
-                        <td><?=htmlspecialchars($r->modele)?></td>
-                        <td><?=htmlspecialchars($r->version)?></td>
-                        <td><?=htmlspecialchars($r->couleur)?></td>
-                        <td><?=htmlspecialchars($r->entrepot)?></td>
-                        <td><?=htmlspecialchars($r->status_commande)?></td>
-                        <td>
-													<a href="commandes_traitement.php?num_commande=<?=$r->id?>&mode="1"">Traiter</a>  <!--" Suprimer L'affectation "-->
-												</td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
-
 <?php require_once $abs_us_root . $us_url_root . 'users/includes/html_footer.php'; ?>
