@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('Africa/Casablanca');
 require_once 'users/init.php';
 require_once $abs_us_root.$us_url_root.'users/includes/template/prep.php';
 
@@ -309,16 +310,48 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
     // Nettoyage des réservations expirées avant de chercher un produit
-    $expirationMinutes = 10; // Durée limite d'une réservation temporaire
-    $expirationTime = date('Y-m-d H:i:s', strtotime("-{$expirationMinutes} minutes"));
+    $expirationMinutes = 1440; // Durée limite d'une réservation temporaire
+  //  $expirationTime = date('Y-m-d H:i:s', strtotime("-{$expirationMinutes} minutes"));
+    $expirationLimit = date('Y-m-d H:i:s', strtotime("-{$expirationMinutes} minutes"));
 
-    $db->query("UPDATE produits SET status = 'Disponible', date_reservation = NULL
-                WHERE status = 'Reserve' AND date_reservation IS NOT NULL AND date_reservation < ?",
-                [$expirationTime]);
-
-
+    //  ligne pour générer une vraie date future d’expiration
+     $delaiPrevu = date('Y-m-d H:i:s', strtotime("+{$expirationMinutes} minutes"));
 
 
+  //  $db->query("UPDATE produits SET status = 'Disponible', date_commande = NULL
+    //            WHERE status = 'Reserve' AND date_commande IS NOT NULL AND date_commande < ?",
+      //          [$expirationTime]);
+
+                // Libération des produits liés à une commande expirée
+              //  $db->query("UPDATE produits
+              //              JOIN commandes ON commandes.produit_id = produits.id
+              //              SET produits.status = 'Disponible'
+              //              WHERE produits.status = 'Reserve'
+              //                AND commandes.status_commande = 'Reserve'
+              //                AND commandes.date_commande < ?",
+              //              [$expirationTime]);
+
+                            // Marquer les commandes expirées comme "Expiree"
+                //                     $db->query("UPDATE commandes
+                //                        SET status_commande = 'Expiree'
+                //                        WHERE status_commande = 'Reserve'
+                //                          AND date_commande < ?",
+                //                        [$expirationTime]);
+
+                                    // Libération des produits liés à une commande expirée
+                                        $db->query("UPDATE produits
+                                                    JOIN commandes ON commandes.produit_id = produits.id
+                                                    SET produits.status = 'Disponible'
+                                                    WHERE produits.status = 'Reserve'
+                                                      AND commandes.status_commande = 'Reserve'
+                                                      AND commandes.delai < ?",
+                                                    [$expirationLimit]);
+// Marquer les commandes expirées comme "Expiree"
+                                        $db->query("UPDATE commandes
+                                                    SET status_commande = 'Expiree'
+                                                    WHERE status_commande = 'Reserve'
+                                                      AND delai < ?",
+                                                    [$expirationLimit]);
                 try {
                     // Démarrer la transaction
                     $db->query("START TRANSACTION");
@@ -357,13 +390,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         "cin_pass_recto_acheteur" => $uploadedFiles['cin_pass_recto_acheteur'] ?? null,
                         "cin_pass_verso_acheteur" => $uploadedFiles['cin_pass_verso_acheteur'] ?? null,
                         "date_commande" => date("Y-m-d H:i:s"),
-                        "status_commande" => "Reserve"
+                        "status_commande" => "Reserve",
+                        "delai" => $delaiPrevu
                     ]);
 
                     // Mettre à jour le statut du produit
                     $db->update('produits', $produit_id, [
                         "status" => "Reserve",
-                        "date_reservation" => date("Y-m-d H:i:s")
+                      ///////  "date_reservation" => date("Y-m-d H:i:s")
                     ]);
 
                     // Valider la transaction

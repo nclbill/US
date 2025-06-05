@@ -10,19 +10,23 @@ if (!securePage($_SERVER['PHP_SELF'])) {
 
 // Traitement des actions envoyées par POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-//	echo "<pre>";
-//print_r($_POST);
-//echo "</pre>";
+	echo "<pre>";
+print_r($_POST);
+echo "</pre>";
     $commande_id = Input::get('commande_id');
     $produit_id = Input::get('produit_id');
 
     if (Input::exists() && Token::check(Input::get('csrf'))) {
         if (Input::get('valider')) {
             $db->update('commandes', $commande_id, ['status_commande' => 'Validée']);
-            $db->update('produits', $produit_id, ['status' => 'Vendu']);
+            $db->update('produits', $produit_id, [
+                'status' => 'Vendu'
+            ]);
         } elseif (Input::get('annuler')) {
             $db->update('commandes', $commande_id, ['status_commande' => 'Annulée']);
-            $db->update('produits', $produit_id, ['status' => 'disponible']);
+            $db->update('produits', $produit_id, [
+                'status' => 'Disponible'
+            ]);
 
 
 
@@ -30,13 +34,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $delai = (int)Input::get('nouveau_delai');
     $commande_id = Input::get('commande_id');
 
+    echo "<p>⏱ Vérification commande_id : $commande_id</p>";
 
     // Récupérer la commande depuis la base
     $commande_actuelle = $db->query("SELECT delai FROM commandes WHERE id = ?", [$commande_id])->first();
-	//	echo "<p>Valeur brute du délai en base : </p>";
-		//var_dump($commande_actuelle->delai);
+		echo "<p>Valeur brute du délai en base : </p>";
+		var_dump($commande_actuelle->delai);
     if ($commande_actuelle) {
         $dateActuelle = $commande_actuelle->delai; // string date
+
+        echo "<p>Date actuelle du délai : $dateActuelle</p>";
 
         // Convertir en objet DateTime
         $dateObj = new DateTime($dateActuelle);
@@ -47,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Formater la nouvelle date pour SQL
         $nouvelleDate = $dateObj->format('Y-m-d H:i:s');
 
-      //  echo "<p>Nouvelle date calculée : $nouvelleDate</p>";
+        echo "<p>Nouvelle date calculée : $nouvelleDate</p>";
 
         // Mettre à jour la base
         if ($db->update('commandes', $commande_id, ['delai' => $nouvelleDate])) {
@@ -59,7 +66,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = "<div class='alert alert-danger'>Commande introuvable.</div>";
     }
 }
-}
+
+
+
+
+
+
+
+		//		elseif (Input::get('modifier_delai') && is_numeric(Input::get('nouveau_delai'))) {
+      //      $delai = (int)Input::get('nouveau_delai');
+      //      $nouvelleDate = date('Y-m-d H:i:s', strtotime("+$delai minutes"));
+      //      $db->update('commandes', $commande_id, ['delai' => $nouvelleDate]);
+      //  }
+    }
 }
 
 // Récupération des commandes en attente (status = 'Reserve')
@@ -71,9 +90,15 @@ $commandes = $db->query("
     FROM commandes c
     JOIN produits p ON c.produit_id = p.id
     WHERE c.status_commande = 'Reserve'
-
+    ORDER BY c.delai ASC
 ")->results();
 
+if (isset($commande_id)) {
+    $commande_test = $db->query("SELECT delai FROM commandes WHERE id = ?", [$commande_id])->first();
+    if ($commande_test) {
+        echo "<pre>Delai de la commande après update : " . $commande_test->delai . "</pre>";
+    }
+}
 ?>
 <?php
 if (empty($commandes)) {
@@ -89,11 +114,10 @@ if (!empty($message)) {
         <thead>
             <tr>
                 <th>Produit</th>
-								<th>Revendeur</th>
-                <th>Délai Av Annulation </th>
-                <th>Note Commande</th>
+                <th>Modifier Délai</th>
+                <th>Revendeur</th>
+                <th>Temps restant</th>
                 <th>Actions</th>
-								<th>Note Traitement</th>
             </tr>
         </thead>
         <tbody>
@@ -101,7 +125,8 @@ if (!empty($message)) {
 <?php //var_dump($commandes); ?>
 </pre>
         <?php foreach ($commandes as $commande):
-
+          //  $now = new DateTime();
+          //  $dateDelai = new DateTime($commande->delai);
 
 					    $now = new DateTime('now', new DateTimeZone('Africa/Casablanca'));
 					    $dateDelai = DateTime::createFromFormat('Y-m-d H:i:s', $commande->delai, new DateTimeZone('Africa/Casablanca'));
@@ -134,11 +159,18 @@ if (!empty($message)) {
     $delai = (int)Input::get('nouveau_delai');
     $commande_id = Input::get('commande_id');
 
+    // Ton code de modification date ici...
 
-    // Redirect::to("commandes_traitement.php");
+    // Après la mise à jour, fais ce test de lecture dans la base :
+    $commande_test = $db->query("SELECT delai FROM commandes WHERE id = ?", [$commande_id])->first();
+    //echo "<pre>Delai de la commande après update : " . $commande_test->delai . "</pre>";
+Redirect::to("commandes_traitement.php");
 
 
 }
+				//			echo "<p>Commande ID : " . Input::get('commande_id') . "</p>";
+//echo "<p>Nouveau délai : " . Input::get('nouveau_delai') . " minutes</p>";
+
         ?>
             <tr>
                 <td>
@@ -146,53 +178,32 @@ if (!empty($message)) {
                     Entrepôt : <?= $commande->entrepot ?><br>
                     Produit ID : <?= $commande->produit_id ?><br>
                     Statut : <?= $commande->produit_status ?><br>
-                    Réservé jusqu'au :<br> <?= $commande->delai ?>
+                    Réservé jusqu'au : <?= $commande->delai ?>
                 </td>
-
-								<td>
-									<center>
-                    <?= $commande->Nom_revendeur ?><br>
-                    <a href="infos_client.php?id=<?= $commande->id ?>" class="btn btn-info btn-sm mt-1">Voir client</a>
-									</center>
-								</td>
-
                 <td>
-									<center>
-									<?= $affichageDelai ?><br>
-                    <br>
                     <form method="post" class="mb-2">
                         <input type="hidden" name="csrf" value="<?= Token::generate() ?>">
                         <input type="hidden" name="commande_id" value="<?= $commande->id ?>">
                         <input type="hidden" name="produit_id" value="<?= $commande->produit_id ?>">
-                        <input type="number" name="nouveau_delai" class="form-control" min="1" placeholder="Jour">
-                        <button type="submit" centered name="modifier_delai" class="btn btn-warning btn-sm mt-1">Modifier délai</button>
+                        <input type="number" name="nouveau_delai" class="form-control" min="1" placeholder="Min">
+                        <button type="submit" name="modifier_delai" class="btn btn-warning btn-sm mt-1">Modifier délai</button>
                     </form>
-										</center>
                 </td>
-
                 <td>
-
-								<textarea cols="20" rows="5" readonly><?php echo htmlentities($commande->note_commande, ENT_QUOTES, 'utf-8'); ?></textarea>
-
-							</td>
+                    <?= $commande->Nom_revendeur ?><br>
+                    <a href="infos_client.php?id=<?= $commande->id ?>" class="btn btn-info btn-sm mt-1">Voir client</a>
+                </td>
+                <td>
+                <?= $affichageDelai ?></td>
                 <td>
                     <form method="post" style="display:inline;">
-                        <input type="hidden" name="csrf" value="<?= Token::generate() ?>"> <br>
-                        <input type="hidden" name="commande_id" value="<?= $commande->id ?>"><br>
+                        <input type="hidden" name="csrf" value="<?= Token::generate() ?>">
+                        <input type="hidden" name="commande_id" value="<?= $commande->id ?>">
                         <input type="hidden" name="produit_id" value="<?= $commande->produit_id ?>">
                         <button type="submit" name="valider" class="btn btn-success btn-sm">Valider</button>
-                        <button type="submit" name="annuler" class="btn btn-danger btn-sm">Rejeter</button>
+                        <button type="submit" name="annuler" class="btn btn-danger btn-sm">Annuler</button>
                     </form>
                 </td>
-								<td>
-									<form method="post">
-
-										<textarea cols="20" rows="5"><?php echo htmlentities($commande->note_traitement, ENT_QUOTES, 'utf-8'); ?></textarea>
-
-
-
-									</form>
-							 </td>
             </tr>
         <?php endforeach; ?>
 
