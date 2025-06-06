@@ -153,8 +153,8 @@ if (!empty($message)) {
 
 								<td>
 									<center>
-                    <?= $commande->Nom_revendeur ?><br>
-                    <a href="infos_client.php?id=<?= $commande->id ?>" class="btn btn-info btn-sm mt-1">Voir client</a>
+                    <?= $commande->raison_sociale_revendeur ?><br>
+                    <a href="infos_client.php?id=<?= $commande->id ?>&page_precedente=traitement" class="btn btn-info btn-sm mt-1">Voir client</a>
 									</center>
 								</td>
 

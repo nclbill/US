@@ -6,6 +6,8 @@ require_once $abs_us_root.$us_url_root.'users/includes/template/prep.php';
 if (!securePage($_SERVER['PHP_SELF'])) {
     die("Accès interdit !");
 }
+if(hasPerm([2,3,5,7],$user->data()->id)){$mode = 5;print_r("2357");}// 3 saisie 4 mode modification}// 2 admin 3 gestionaire 5 controler 7 commercial
+if(hasPerm([6],$user->data()->id)){$mode = 6;print_r("6");}// 6 client
 
 ///////////////////////dinamique
 $searchTerm1_categorie = Input::get('searchTerm1_categorie');
@@ -251,16 +253,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $couleur = htmlspecialchars(Input::get('searchTerm5_couleur'));
     $entrepot = htmlspecialchars(Input::get('entrepot'));
 
+    $raison_sociale_entree = htmlspecialchars(Input::get('raison_sociale_entree'));
+
     $nom_acheteur = htmlspecialchars(Input::get('nom_acheteur'));
     $prenom_acheteur = htmlspecialchars(Input::get('prenom_acheteur'));
     $tel_acheteur = htmlspecialchars(Input::get('tel_acheteur'));
     $ville_acheteur = htmlspecialchars(Input::get('ville_acheteur'));
 
     $note_commande = htmlspecialchars(Input::get('note_commande'));
+    $id_client_revendeur = $user->data()->id; // peut etre aussi un commercial ou personel habilite a passer une commende
+if ($mode==5) {//commercial et personnel habilite passer la commende
+print_r("il entre");
+  $raison_sociale_revendeur = $raison_sociale_entree;
+} else {// revendeur passe la commende
+  $raison_sociale_revendeur = $user->data()->raison_sociale;
+}
 
 
-    $id_client_revendeur = $user->data()->id;
-    $Nom_revendeur = $user->data()->lname;
 
     // Configuration de l'upload
     $targetDir = "uploads/";
@@ -385,7 +394,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $db->insert('commandes', [
                         "produit_id" => $produit_id,
                         "id_client_revendeur" => $id_client_revendeur,
-                        "Nom_revendeur" => $Nom_revendeur,
+                        "raison_sociale_revendeur" => $raison_sociale_revendeur,
                         "nom_acheteur" => $nom_acheteur,
                         "prenom_acheteur" => $prenom_acheteur,
                         "tel_acheteur" => $tel_acheteur,
@@ -451,6 +460,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <label>Note :</label> <br>
     <textarea name="note_commande" id="note_commande" rows="5" style="height: 200px; width: 60%;resize: vertical;"wrap="soft"></textarea><br>
 
+    <?php if ($mode==5): ?>
+      <h3>Pour le Compte De :</h3>
+      <label>R.Sociale Revendeur :</label><br>
+      <input type="text" name="raison_sociale_entree"required><br>
+    <?php endif; ?>
 
     <h3>Informations de l'acheteur</h3>
 

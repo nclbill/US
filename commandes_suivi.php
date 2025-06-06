@@ -144,7 +144,7 @@ if (!empty($message)) {
 }
         ?>
             <tr>
-                <td>
+                <td><?php // produit ?>
                     <?= "{$commande->categorie} / {$commande->marque} / {$commande->modele} / {$commande->version} / {$commande->couleur}" ?><br>
                     Entrepôt : <?= $commande->entrepot ?><br>
                     Num Commande : <?= $commande->id ?><br>
@@ -152,14 +152,17 @@ if (!empty($message)) {
                     Réservé jusqu'au :<br> <?= $commande->delai ?>
                 </td>
 
-								<td>
+								<td><?php // client ?>
 									<center>
                     <br>
-                    <a href="infos_client.php?id=<?= $commande->id ?>" class="btn btn-info btn-sm mt-1">Voir client</a>
+                    par: <br>
+                    <?= $user_raison_sociale ?><br>
+                    pour:<br>
+                    <a href="infos_client.php?id=<?= $commande->id ?>&page_precedente=suivi" class="btn btn-info btn-sm mt-1">Voir client</a>
 									</center>
 								</td>
 
-                <td>
+                <td><?php // delai ?>
 									<center>
                     <br>
                     <br>
@@ -167,7 +170,7 @@ if (!empty($message)) {
                 </center>
                 </td>
 
-                <td>
+                <td><?php // note ?>
 
 								<textarea cols="20" rows="5" readonly><?php echo htmlentities($commande->note_commande, ENT_QUOTES, 'utf-8'); ?></textarea>
 

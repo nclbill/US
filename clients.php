@@ -195,7 +195,7 @@ if(!empty($_GET['Supprimer'])){
     $db->query("DELETE FROM users WHERE id = ?",[$id_user]);
 
     $mode = 1; // Mode modification
-    Redirect::to("clients_modif.php");
+    Redirect::to("clients.php");
 }
 
 //////////////////////////////////////// Modifier /////////////////////////////////////////////////////////////
@@ -288,7 +288,7 @@ if(!empty($_GET['Modifier'])){
                     'ville' => $ville,
                 ];
                 $db->update('users', $id_user, $fields);
-                Redirect::to("clients_modif.php");
+                Redirect::to("clients.php");
             }
         }
     }

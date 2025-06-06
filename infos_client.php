@@ -3,6 +3,7 @@
 require_once 'users/init.php';
 require_once $abs_us_root . $us_url_root . 'users/includes/template/prep.php';
 
+$page_precedente = Input::get('page_precedente');
 
 if (!securePage($_SERVER['PHP_SELF'])) {
     die("Accès interdit !");
@@ -80,8 +81,12 @@ function fileExistsAndValid($absolutePath) {
       </div>
     </div>
   </div>
-
+<?php if ($page_precedente=="traitement"): ?>
   <a href="commandes_traitement.php" class="btn btn-secondary mt-3">← Retour Aux Traitement Des Commandes</a>
+<?php elseif ($page_precedente=="suivi"): ?>
+  <a href="commandes_suivi.php" class="btn btn-secondary mt-3">← Retour Aux Suivi Des Commandes</a>
+<?php endif; ?>
+
 </div>
 
 <?php require_once $abs_us_root . $us_url_root . 'users/includes/html_footer.php'; ?>
