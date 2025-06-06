@@ -8,6 +8,8 @@ require_once $abs_us_root.$us_url_root.'users/includes/template/prep.php';
 if (!securePage($_SERVER['PHP_SELF'])) {
     die("Accès interdit !");
 }
+if(hasPerm([2,3,5],$user->data()->id)){$mode = 4;}// 3 saisie 4 mode modification}// 2 admin 3 gestionaire 5 controler
+if(hasPerm([4],$user->data()->id)){$mode = 3;}// 3 saisie 4 mode modification}// 2 admin 3 gestionaire 5 controler
 
 ?>
 
@@ -114,6 +116,8 @@ if(!empty($_GET['Ajouter'])) {
                 // Récupération de l'utilisateur inséré
                 $query = $db->query("SELECT * FROM users WHERE prompt_ncl = ?",[$prompt_ncl]);
                 $results = $query->results();
+
+
                 $id_user = $results[0]->id;
                 $username = $results[0]->username;
                 $email = $results[0]->email;
@@ -124,6 +128,11 @@ if(!empty($_GET['Ajouter'])) {
 
                 // Suppression du "prompt_ncl"
                 $db->update("users", $id_user, ["prompt_ncl" => 0]);
+
+
+
+
+
 
                 // Envoi de l'email de confirmation avec le login et le mot de passe
                 $subject = "Votre mot de passe @EspaceMoto";
@@ -167,6 +176,8 @@ if ($count_client > 0) {
     $tel = $results_client[0]->tel;
     $ville = $results_client[0]->ville;
 }
+if ($mode==4) {
+
 
 //////////////////////////////////////// Supprimer /////////////////////////////////////////////////////////////
 
@@ -282,7 +293,7 @@ if(!empty($_GET['Modifier'])){
         }
     }
 }
-
+}
 ?>
 
 <!-- Formulaire HTML pour la gestion des clients -->
@@ -331,7 +342,7 @@ if(!empty($_GET['Modifier'])){
 
                 <!-- Boutons de soumission -->
                 <input class="btn btn-success" type="submit" name="Ajouter" value="Ajouter">
-                <?php if ($mode == 1): ?>
+                <?php if ($mode == 4): ?>
                     <input class="btn btn-success" type="submit" name="Modifier" value="Modifier">
                     <input class="btn btn-danger" type="submit" name="Supprimer" value="Supprimer">
                 <?php endif; ?>
