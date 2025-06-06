@@ -1,10 +1,17 @@
 <?php
 require_once 'users/init.php';
 require_once $abs_us_root.$us_url_root.'users/includes/template/prep.php';
-if (!securePage($_SERVER['PHP_SELF'])) { die(); }
+
+if (!securePage($_SERVER['PHP_SELF'])) {
+    die("Accès interdit !");
+}
+if(hasPerm([2,3,5],$user->data()->id)){$mode = 1;}// 0 saisie 1 mode modification}// 2 admin 3 gestionaire 5 controler
+if(hasPerm([4],$user->data()->id)){$mode = 0;}// 0 saisie 1 mode modification}// 2 admin 3 gestionaire 5 controler
 
 // Récupération des paramètres GET
-$mode = 0;// 0 saisie 1 mode modification
+
+
+
 $searchTerm1_categorie = Input::get('searchTerm1_categorie');
 $searchTerm2_marque = Input::get('searchTerm2_marque');
 $searchTerm3_modele= Input::get('searchTerm3_modele');
@@ -12,9 +19,9 @@ $searchTerm4_version = Input::get('searchTerm4_version');
 $searchTerm5_couleur = Input::get('searchTerm5_couleur');
 $searchTerm6_vin = Input::get('searchTerm6_vin');
 $entrepot = Input::get('entrepot');
-$disponibilite = Input::get('disponibilite');
 $id_client = $user->data()->id;
 $search_vin = Input::get('search_vin');
+$status=Input::get('status');
 //$id_produit = Input::get('id_produit');
 //print_r($id_produit);
 // Traitement du formulaire
@@ -27,9 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $couleur = Input::get('couleur');
     $vin = Input::get('vin');
 		$entrepot = Input::get('entrepot');
-    $disponibilite = Input::get('disponibilite');
     $id_produit = Input::get('id_produit');
-
+    $status=Input::get('status');
     // Ajouter un produit
 
 
@@ -56,7 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 						"couleur"=>$couleur,
 						"vin"=>$vin,
 						"entrepot"=>$entrepot,
-            "disponibilite"=>$disponibilite,
+            "status"=>"disponible",
+
 									);
 
 
@@ -82,7 +89,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 																	"couleur"=>$couleur,
 																	"vin"=>$vin,
 																	"entrepot"=>$entrepot,
-                                  "disponibilite"=>$disponibilite,
+                                  "status"=>$status,
+
 																);
 
 																	$db->update("produits",$id_produit,$fields_modifier);
@@ -108,7 +116,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 																							"couleur"=>$couleur,
 																							"vin"=>$vin,
 																							"entrepot"=>$entrepot,
-                                              "disponibilite"=>$disponibilite,
+                                              "status"=>$status,
+
 																						);
 
 																							$db->update("produits",$id_produit,$fields_modifier);
@@ -133,7 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $searchTerm5_couleur = $couleur;
     $searchTerm6_vin = $vin;
     $entrepot = $entrepot;
-    $disponibilite = $disponibilite;
+    $status = $status;
     $id_client = $user->data()->id;
 }
 // search
@@ -161,7 +170,7 @@ $searchTerm4_version = $results_search_vin[0]->version;
 $searchTerm5_couleur = $results_search_vin[0]->couleur;
 $searchTerm6_vin = $results_search_vin[0]->vin;
 $entrepot = $results_search_vin[0]->entrepot;
-$disponibilite = $results_search_vin[0]->disponibilite;
+$status = $results_search_vin[0]->status;
 $id_client = $user->data()->id;
 
 }else {
@@ -324,7 +333,8 @@ $results = $query->results();
                         <tr>
 													<th><?=$count6?> VIN <?php if ($count6 != 1) echo "s"; ?></th>
 												  <th>Entrepot</th>
-                          <th>Disponibilite</th>
+                          <th>Status</th>
+
 												</tr>
                     </thead>
                     <tbody>
@@ -333,7 +343,7 @@ $results = $query->results();
                             <tr>
 
                                 <td style="background-color: <?= ($searchTerm6_vin == $r6->vin) ? '#ADD8e6' : '' ?>">
-                                    <a href="produits.php?searchTerm1_categorie=<?= urlencode($searchTerm1_categorie) ?>&searchTerm2_marque=<?= urlencode($searchTerm2_marque) ?>&searchTerm3_modele=<?= urlencode($searchTerm3_modele) ?>&searchTerm4_version=<?= urlencode($searchTerm4_version) ?>&searchTerm5_couleur=<?= urlencode($searchTerm5_couleur) ?>&searchTerm6_vin=<?= urlencode($r6->vin)?>&entrepot=<?= urlencode($r6->entrepot) ?>&disponibilite=<?= urlencode($r6->disponibilite)?>&id_produit=<?= urlencode($r6->id) ?>">
+                                    <a href="produits.php?searchTerm1_categorie=<?= urlencode($searchTerm1_categorie) ?>&searchTerm2_marque=<?= urlencode($searchTerm2_marque) ?>&searchTerm3_modele=<?= urlencode($searchTerm3_modele) ?>&searchTerm4_version=<?= urlencode($searchTerm4_version) ?>&searchTerm5_couleur=<?= urlencode($searchTerm5_couleur) ?>&searchTerm6_vin=<?= urlencode($r6->vin)?>&entrepot=<?= urlencode($r6->entrepot) ?>&status=<?= urlencode($r6->status) ?>&id_produit=<?= urlencode($r6->id) ?>">
                                         <?= htmlspecialchars($r6->vin) ?>
                                     </a>
 																</td>
@@ -343,12 +353,12 @@ $results = $query->results();
 																			<?= htmlspecialchars($r6->entrepot) ?>
 																	</a>
 																</td>
-
-                                <td style="background-color: <?= ($disponibilite == $r6->disponibilite) ? '' : '' ?>">
+                                <td style="background-color: <?= ($status == $r6->status) ? '' : '' ?>">
                                   <?php /*<a href="produits.php?searchTerm1_categorie=<?= urlencode($searchTerm1_categorie) ?>&searchTerm2_marque=<?= urlencode($searchTerm2_marque) ?>&searchTerm3_modele=<?= urlencode($searchTerm3_modele) ?>&searchTerm4_version=<?= urlencode($searchTerm4_version) ?>&searchTerm5_couleur=<?= urlencode($searchTerm5_couleur) ?>&searchTerm6_vin=<?= urlencode($r6->vin)?>&entrepot=<?= urlencode($r6->entrepot) ?>">  */?>
-                                      <?= htmlspecialchars($r6->disponibilite) ?>
+                                      <?= htmlspecialchars($r6->status) ?>
                                   </a>
                                 </td>
+
 
                             </tr>
                         <?php } ?>
@@ -400,7 +410,7 @@ $results = $query->results();
 						<input type="hidden" name="searchTerm5_couleur" value="<?=$searchTerm5_couleur ?>">
 						<input type="hidden" name="searchTerm6_vin" value="<?=$searchTerm6_vin ?>">
             <input type="hidden" name="entrepot" value="<?=$entrepot ?>">
-            <input type="hidden" name="Disponibilite" value="<?=$Disponibilite ?>">
+            <input type="hidden" name="status" value="<?=$status ?>">
 
 
 
@@ -426,22 +436,33 @@ $results = $query->results();
 		            </div>
 		            <div class="col-auto">
 		                <label>VIN</label>
-		                <input type="text" name="vin" class="form-control" value="<?= $searchTerm6_vin ?>" required>
+		                <input type="text" name="vin" class="form-control" pattern=".*\S+.*" title="Ce champ ne peut pas être vide ou ne contenir que des espaces."value="<?= $searchTerm6_vin ?>" required>
 		            </div>
 								<div class="col-auto">
 										<label>Entrepot</label>
 										<input type="text" name="entrepot" class="form-control" value="<?= $entrepot ?>" required>
 								</div>
+
                 <div class="col-auto">
-                    <label>Disponibilite</label>
-                    <input type="text" name="disponibilite" class="form-control" value="<?= $disponibilite ?>">
-                </div>
+                  <label for="status">Status</label>
+                  <select name="status" id="status" class="form-control" required>
+                      <option value="" disabled <?= empty($status) ? 'selected' : '' ?>><?= $status ?></option>
+                      <option value="disponible" <?= $status === 'disponible' ? 'selected' : '' ?>>disponible</option>
+                      <option value="reserve" <?= $status === 'reserve' ? 'selected' : '' ?>>reserve</option>
+                      <option value="Vendu" <?= $status === 'Vendu' ? 'selected' : '' ?>>Vendu</option>
+                  </select>
+              </div>
+
+
 
 
 		        <br>
 		        <button type="submit" name="action" value="ajouter" class="btn btn-primary">Ajouter</button>
-		        <button type="submit" name="action" value="modifier" class="btn btn-warning" <?= empty($r6->vin) ? 'disabled' : '' ?>>Modifier</button>
-		        <button type="submit" name="action" value="supprimer" class="btn btn-danger" <?= empty($r6->vin) ? 'disabled' : '' ?>>Supprimer</button>
+            <?php if ($mode==1): ?>
+              <button type="submit" name="action" value="modifier" class="btn btn-warning" <?= empty($r6->vin) ? 'disabled' : '' ?>>Modifier</button>
+              <button type="submit" name="action" value="supprimer" class="btn btn-danger" <?= empty($r6->vin) ? 'disabled' : '' ?>>Supprimer</button>
+            <?php endif; ?>
+
 		    </form>
 
 

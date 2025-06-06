@@ -1,11 +1,4 @@
 
-
-
-
-
-
-
-
 <?php
 date_default_timezone_set('Africa/Casablanca');
 require_once 'users/init.php';

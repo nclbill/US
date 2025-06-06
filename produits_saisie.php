@@ -355,7 +355,7 @@ $results = $query->results();
 		            </div>
 								<div class="col-auto">
 										<label>Entrepot</label>
-										<input type="text" name="entrepot" class="form-control" value="<?= $entrepot ?>" required>
+										<input type="text" name="entrepot" class="form-control" pattern=".*\S+.*" title="Ce champ ne peut pas être vide ou ne contenir que des espaces." value="<?= $entrepot ?>" required >
 								</div>
 
 
