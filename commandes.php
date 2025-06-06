@@ -256,6 +256,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $tel_acheteur = htmlspecialchars(Input::get('tel_acheteur'));
     $ville_acheteur = htmlspecialchars(Input::get('ville_acheteur'));
 
+    $note_commande = htmlspecialchars(Input::get('note_commande'));
+
+
     $id_client_revendeur = $user->data()->id;
     $Nom_revendeur = $user->data()->lname;
 
@@ -387,6 +390,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         "prenom_acheteur" => $prenom_acheteur,
                         "tel_acheteur" => $tel_acheteur,
                         "ville_acheteur" => $ville_acheteur,
+                        "note_commande" => $note_commande,
                         "cin_pass_recto_acheteur" => $uploadedFiles['cin_pass_recto_acheteur'] ?? null,
                         "cin_pass_verso_acheteur" => $uploadedFiles['cin_pass_verso_acheteur'] ?? null,
                         "date_commande" => date("Y-m-d H:i:s"),
@@ -443,6 +447,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <label>Entrepôt :</label>
     <input type="text" name="entrepot" value="<?= $entrepot ?>"required disabled><br>
 
+    <h3>Note Facultatif</h3>
+    <label>Note :</label> <br>
+    <textarea name="note_commande" id="note_commande" rows="5" style="height: 200px; width: 60%;resize: vertical;"wrap="soft"></textarea><br>
+
+
     <h3>Informations de l'acheteur</h3>
 
     <label>Nom :</label>
@@ -456,6 +465,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <label>Ville :</label>
     <input type="text" name="ville_acheteur" required><br>
+
+
 
     <h3>Pièces justificatives</h3>
 

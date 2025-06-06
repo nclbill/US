@@ -15,12 +15,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 //echo "</pre>";
     $commande_id = Input::get('commande_id');
     $produit_id = Input::get('produit_id');
+		$note_traitement = Input::get('note_traitement');
 
     if (Input::exists() && Token::check(Input::get('csrf'))) {
         if (Input::get('valider')) {
             $db->update('commandes', $commande_id, ['status_commande' => 'Validée']);
+						$db->update('commandes', $commande_id, ['note_traitement' => $note_traitement]);
             $db->update('produits', $produit_id, ['status' => 'Vendu']);
-        } elseif (Input::get('annuler')) {
+        } elseif (Input::get('rejeter')) {
             $db->update('commandes', $commande_id, ['status_commande' => 'Annulée']);
             $db->update('produits', $produit_id, ['status' => 'disponible']);
 
@@ -166,6 +168,8 @@ if (!empty($message)) {
                         <input type="hidden" name="produit_id" value="<?= $commande->produit_id ?>">
                         <input type="number" name="nouveau_delai" class="form-control" min="1" placeholder="Jour">
                         <button type="submit" centered name="modifier_delai" class="btn btn-warning btn-sm mt-1">Modifier délai</button>
+
+
                     </form>
 										</center>
                 </td>
@@ -180,8 +184,10 @@ if (!empty($message)) {
                         <input type="hidden" name="csrf" value="<?= Token::generate() ?>"> <br>
                         <input type="hidden" name="commande_id" value="<?= $commande->id ?>"><br>
                         <input type="hidden" name="produit_id" value="<?= $commande->produit_id ?>">
-                        <button type="submit" name="valider" class="btn btn-success btn-sm">Valider</button>
-                        <button type="submit" name="annuler" class="btn btn-danger btn-sm">Rejeter</button>
+												<input type="hidden" name="note_traitement" value="<?= $note_traitement ?>">
+                        <button type="submit" name="valider" value="1" class="btn btn-success btn-sm">Valider</button>
+                        <button type="submit" name="rejeter" value="1" class="btn btn-danger btn-sm">Rejeter</button>
+
                     </form>
                 </td>
 								<td>
