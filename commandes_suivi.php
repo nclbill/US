@@ -25,6 +25,14 @@ $result2 = $db->query("
     WHERE commandes.status_commande = 'Expiree'
 ");
 ///////////////////////////////////////////////////////////
+//archivage des commandes expiree ap
+$db->query("
+    UPDATE commandes
+    SET archive = 1
+    WHERE status_commande = 'Expiree'
+      AND delai < NOW() - INTERVAL 1 MONTH
+");
+/////////////////////////////////////
 $user_id = $user->data()->id;
 $user_raison_sociale = $user->data()->raison_sociale;
 // Traitement des actions envoyées par POST
@@ -179,7 +187,7 @@ if (!empty($message)) {
           <th>Entrepôt</th>
           <th>Date de réservation</th>
           <th>Date d’expiration</th>
-          
+
         </tr>
       </thead>
       <tbody>
