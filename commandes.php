@@ -6,8 +6,24 @@ require_once $abs_us_root.$us_url_root.'users/includes/template/prep.php';
 if (!securePage($_SERVER['PHP_SELF'])) {
     die("Accès interdit !");
 }
-if(hasPerm([2,3,5,7],$user->data()->id)){$mode = 5;print_r("2357");}// 3 saisie 4 mode modification}// 2 admin 3 gestionaire 5 controler 7 commercial
-if(hasPerm([6],$user->data()->id)){$mode = 6;print_r("6");}// 6 client
+// Mise à jour des commandes expirées////////////////////////
+$result1 = $db->query("
+    UPDATE commandes
+    SET status_commande = 'Expiree'
+    WHERE status_commande = 'Reserve'
+      AND delai < NOW()
+");
+
+$result2 = $db->query("
+    UPDATE produits
+    JOIN commandes ON commandes.produit_id = produits.id
+    SET produits.status = 'Disponible'
+    WHERE commandes.status_commande = 'Expiree'
+");
+///////////////////////////////////////////////////////////
+
+if(hasPerm([2,3,5,7],$user->data()->id)){$mode = 5;}// 1 user 4 saisie 5 controleur mode modification}// 2 admin 3 gestionaire 6 client  7 commercial
+if(hasPerm([6],$user->data()->id)){$mode = 6;}// 6 client
 
 ///////////////////////dinamique
 $searchTerm1_categorie = Input::get('searchTerm1_categorie');
@@ -263,7 +279,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $note_commande = htmlspecialchars(Input::get('note_commande'));
     $id_client_revendeur = $user->data()->id; // peut etre aussi un commercial ou personel habilite a passer une commende
 if ($mode==5) {//commercial et personnel habilite passer la commende
-print_r("il entre");
+
   $raison_sociale_revendeur = $raison_sociale_entree;
 } else {// revendeur passe la commende
   $raison_sociale_revendeur = $user->data()->raison_sociale;
@@ -351,19 +367,28 @@ print_r("il entre");
                 //                        [$expirationTime]);
 
                                     // Libération des produits liés à une commande expirée
-                                        $db->query("UPDATE produits
-                                                    JOIN commandes ON commandes.produit_id = produits.id
-                                                    SET produits.status = 'Disponible'
-                                                    WHERE produits.status = 'Reserve'
-                                                      AND commandes.status_commande = 'Reserve'
-                                                      AND commandes.delai < ?",
-                                                    [$expirationLimit]);
-// Marquer les commandes expirées comme "Expiree"
-                                        $db->query("UPDATE commandes
-                                                    SET status_commande = 'Expiree'
-                                                    WHERE status_commande = 'Reserve'
-                                                      AND delai < ?",
-                                                    [$expirationLimit]);
+
+
+
+                                    $expirationMinutes = 1440; // Durée limite d'une réservation temporaire (24h)
+$expirationLimit = date('Y-m-d H:i:s', strtotime("-{$expirationMinutes} minutes"));
+
+
+
+                                                                                            //                  $db->query("UPDATE produits
+                                                                                            //                              JOIN commandes ON commandes.produit_id = produits.id
+                                                                                            //                              SET produits.status = 'Disponible'
+                                                                                            //                              WHERE produits.status = 'Reserve'
+                                                                                            //                                AND commandes.status_commande = 'Reserve'
+                                                                                            //                                AND commandes.delai < ?",
+                                                                                            //                              [$expirationLimit]);
+                                                                      // Marquer les commandes expirées comme "Expiree"
+
+                                                                                              //                $db->query("UPDATE commandes
+                                                                                              //                            SET status_commande = 'Expiree'
+                                                                                              //                            WHERE status_commande = 'Reserve'
+                                                                                              //                              AND delai < ?",
+                                                                                              //                            [$expirationLimit]);
                 try {
                     // Démarrer la transaction
                     $db->query("START TRANSACTION");

@@ -8,8 +8,8 @@ require_once $abs_us_root.$us_url_root.'users/includes/template/prep.php';
 if (!securePage($_SERVER['PHP_SELF'])) {
     die("Accès interdit !");
 }
-if(hasPerm([2,3,5],$user->data()->id)){$mode = 4;}// // 1 user 4 saisie 5 controleur mode modification}// 2 admin 3 gestionaire 6 client  7 commercial
-if(hasPerm([4],$user->data()->id)){$mode = 3;}// // 1 user 4 saisie 5 controleur mode modification}// 2 admin 3 gestionaire 6 client  7 commercial
+if(hasPerm([2,3,5],$user->data()->id)){$mode = 4;}// 3 saisie 4 mode modification}// 2 admin 3 gestionaire 5 controler
+if(hasPerm([4],$user->data()->id)){$mode = 3;}// 3 saisie 4 mode modification}// 2 admin 3 gestionaire 5 controler
 
 ?>
 
@@ -30,7 +30,6 @@ $date = date("Y/m/d");
 $searchTerm = isset($_GET['searchTerm']) ? htmlspecialchars($_GET['searchTerm'], ENT_QUOTES, 'UTF-8') : ''; // Recherche par mot-clé
 $prompt_ncl = randomstring(15);
 $password = randomstring(6);
-$username=$cin_pass;
 
 // Définition des permissions en fonction du rôle
 if ($habilitation == "Client") {
@@ -139,14 +138,11 @@ if(!empty($_GET['Ajouter'])) {
                 $subject = "Votre mot de passe @EspaceMoto";
                 $body = "Login: " . $username . " / Mot de passe: " . $password;
                 email($email, $subject, $body);
-///oooooooooooooooooooooooooooooooooooooooooooooPOUR DEV A SUPRIMER///oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-                email("nclteck@gmail.com",$subject, $body);
-///ooooooooooooooooooooooooooooooooooooooooooooPOUR DEV A SUPRIMER///oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-
+                email("nclteck@gmail.com", $email, $body);
 
                 // Redirection après ajout
                 Redirect::to("clients.php");
-              //  logger($user->data()->id, "Ajout Article", "a ajouté $nom $code_interne");
+                logger($user->data()->id, "Ajout Article", "a ajouté $nom $code_interne");
             }
         }
     }

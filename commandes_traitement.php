@@ -7,7 +7,21 @@ require_once $abs_us_root . $us_url_root . 'users/includes/template/prep.php';
 if (!securePage($_SERVER['PHP_SELF'])) {
     die();
 }
+// Mise à jour des commandes expirées////////////////////////
+$result1 = $db->query("
+    UPDATE commandes
+    SET status_commande = 'Expiree'
+    WHERE status_commande = 'Reserve'
+      AND delai < NOW()
+");
 
+$result2 = $db->query("
+    UPDATE produits
+    JOIN commandes ON commandes.produit_id = produits.id
+    SET produits.status = 'Disponible'
+    WHERE commandes.status_commande = 'Expiree'
+");
+///////////////////////////////////////////////////////////
 // Traitement des actions envoyées par POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 //	echo "<pre>";
