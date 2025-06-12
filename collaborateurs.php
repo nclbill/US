@@ -20,11 +20,22 @@ if (!securePage($_SERVER['PHP_SELF'])) { die(); }
 	$subject = "votre mot de pass @EspaceMoto";
 	$body = "login:".$username."   /   pass:   ".$password;
   $prompt_ncl = randomstring(15);
-	if ($habilitation == "saisie") {
+
+
+  if ($habilitation == "OpSaisie") {
 	$permissions = 4;
 	}
-	if ($habilitation == "modification") {
+	if ($habilitation == "Controleur") {
 	$permissions = 5;
+	}
+	if ($habilitation == "Commercial") {
+	$permissions = 7;
+	}
+	if ($habilitation == "Gestionnaire") {
+	$permissions = 3;
+	}
+	if ($habilitation == "OpSaisie+++") {
+	$permissions = 8;
 	}
 	////////////////////////////////// ajouter sécurisé
 	if (!empty($_GET['Ajouter'])) {
@@ -63,7 +74,6 @@ if (!securePage($_SERVER['PHP_SELF'])) { die(); }
 	                "tel"                 => $tel,
 	                "habilitation"        => $habilitation,
 	                "vericode"            => 0,
-
 	                "oauth_tos_accepted"  => true,
 	                "email_verified"      => 1,
 	                "account_owner"       => 1,
@@ -79,13 +89,20 @@ if (!securePage($_SERVER['PHP_SELF'])) { die(); }
 	            $db->insert("users", $fields1);
 
 	            $query = $db->query("SELECT * FROM users WHERE prompt_ncl = ?", [$prompt_ncl]);
+							$count = $query->count();
+							$results = $query->results();
+							$id_user = $results[0]->id;
+							//print_r($results);
+			//				print_r($id_user);
+			//				print_r($habilitation);
+			//					print_r($permissions);
+
 	            if ($query->count() != 1) {
 	                display_errors(["Erreur lors de la récupération de l'utilisateur"]);
 	                return;
 	            }
 
-	            $results = $query->results();
-	            $id_user = $results[0]->id;
+
 
 	            $db->insert("user_permission_matches", ["user_id" => $id_user, "permission_id" => $permissions]);
 	            $db->insert("user_permission_matches", ["user_id" => $id_user, "permission_id" => 1]);
@@ -118,6 +135,7 @@ if ($count_collaborateur > 0) {
 			$lname = $results_collaborateur[0]->lname;
 			$fname = $results_collaborateur[0]->fname;
 			$habilitation = $results_collaborateur[0]->habilitation;
+		  $permissions = $results_collaborateur[0]->permissions;
 			$magasin = $results_collaborateur[0]->magasin;
 			$email = $results_collaborateur[0]->email;
 			$tel = $results_collaborateur[0]->tel;
@@ -176,8 +194,13 @@ if(!empty($_GET['Modifier'])){
 																														 $ville  = Input::get('ville');
 																														 $tel = Input::get('tel');
 																								             $username = $cin_pass;
-																														 if ($habilitation == "saisie") {$permissions = 4;}
-																													 	 if ($habilitation == "modification") {$permissions = 5;}
+																														 if ($habilitation == "OpSaisie") {$permissions = 4;}
+																													 	 if ($habilitation == "Controleur") {$permissions = 5;}
+																														 if ($habilitation == "Commercial") {$permissions = 7;}
+																														 if ($habilitation == "Gestionnaire") {$permissions = 3;}
+																														 if ($habilitation == "OpSaisie+++") {$permissions = 8;}
+
+
 																										            $query_collaborateur = $db->query("SELECT * FROM users  WHERE cin_pass = ?",[$searchTerm]);
 																														 		$count_collaborateur = $query_collaborateur->count();
 																														 		$results_collaborateur = $query_collaborateur->results();
@@ -186,7 +209,9 @@ if(!empty($_GET['Modifier'])){
 																																$count_permission = $query_permission->count();
 																																$results_permission = $query_permission->results();
 																																$id_permission = $results_permission[0]->id;
-																																		$fields = ['permissions' =>$permissions,
+
+																																		$fields = [
+																																		'permissions' =>$permissions,
 																																		'email' =>$email,
 																																		'username'=>$username,
 																																		'fname' => $fname,
@@ -198,8 +223,8 @@ if(!empty($_GET['Modifier'])){
 																																		'ville' => $ville];
 																																	  $db->update('users', $id_user, $fields);
 																																		$db->update("user_permission_matches",$id_permission,["permission_id" => $permissions,]);
-																																		logger($user->data()->id, " modification de profil", "a modifie le profil $id_user - - $fname - - $lnameet ses permissions vers $permissions ");
-																																		Redirect::to("collaborateurs.php");
+																																		logger($user->data()->id, " modification de profil", "a modifie le profil $id_user - - $fname - - $lname et ses permissions vers $permissions ");
+																																	//	Redirect::to("collaborateurs.php");
 }}}}}}}}}////////////////////////////////////////////// fin modifier//////?>
 <div class="row">
 <div class="col-sm-12">
@@ -231,8 +256,11 @@ if(!empty($_GET['Modifier'])){
 				<label for="">Habilitation</label><br>
 				<select id="habilitation" name="habilitation">
 					<option value="<?=$habilitation?>"><?=$habilitation?></option>
-					<option value="saisie">Saisie</option>
-					<option value="modification">Modification</option>
+					<option value="OpSaisie">OpSaisie</option>
+					<option value="Controleur">Controleur</option>
+					<option value="Commercial">Commercial</option>
+					<option value="OpSaisie+++">OpSaisie+++</option>
+					<option value="Gestionnaire">Gestionnaire</option>
 				</select>
 				<br><br>
 
@@ -267,8 +295,8 @@ if(!empty($_GET['Modifier'])){
 
 <?php
 $query_all_collaborateur = $db->query(
-"SELECT * FROM users WHERE habilitation <> ? AND habilitation <> ? AND habilitation <> ? AND habilitation <> ?",
-["Admin", "Utilisateur", "", "Client"]
+"SELECT * FROM users WHERE permissions <> ? AND permissions <> ? AND permissions <> ? AND permissions <> ?",
+[2, 1, "", 6]
 );
 $count_all_collaborateur = $query_all_collaborateur->count();
 $results_all_collaborateur = $query_all_collaborateur->results();

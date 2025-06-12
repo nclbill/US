@@ -15,8 +15,7 @@ if(hasPerm([4],$user->data()->id)){$mode = 3;}// // 1 user 4 saisie 5 controleur
 
 <?php
 //$mode = 0; // 0 pour saisie, 1 pour modification
-//$id_client = isset($_GET['id_client']) ? $_GET['id_client'] : null; // Si id_client est passé en GET, sinon null
-$id_client = Input::get('id_client');
+$id_client = isset($_GET['id_client']) ? $_GET['id_client'] : null; // Si id_client est passé en GET, sinon null
 $lname = isset($_GET['lname']) ? htmlspecialchars($_GET['lname'], ENT_QUOTES, 'UTF-8') : '';
 $fname = isset($_GET['fname']) ? htmlspecialchars($_GET['fname'], ENT_QUOTES, 'UTF-8') : '';
 $raison_sociale = isset($_GET['raison_sociale']) ? htmlspecialchars($_GET['raison_sociale'], ENT_QUOTES, 'UTF-8') : '';
@@ -43,20 +42,6 @@ if ($habilitation == "Utilisateur") {
     $permissions = 1;
 }
 
-
-
-$lname_selected_client = isset($_GET['lname_selected_client']) ? htmlspecialchars($_GET['lname_selected_client'], ENT_QUOTES, 'UTF-8') : '';
-$fname_selected_client = isset($_GET['fname_selected_client']) ? htmlspecialchars($_GET['fname_selected_client'], ENT_QUOTES, 'UTF-8') : '';
-$raison_sociale_selected_client = isset($_GET['raison_sociale_selected_client']) ? htmlspecialchars($_GET['raison_sociale_selected_client'], ENT_QUOTES, 'UTF-8') : '';
-$ice_selected_client = isset($_GET['ice_selected_client']) ? htmlspecialchars($_GET['ice_selected_client'], ENT_QUOTES, 'UTF-8') : '';
-$habilitation_selected_client = isset($_GET['habilitation_selected_client']) ? htmlspecialchars($_GET['habilitation_selected_client'], ENT_QUOTES, 'UTF-8') : '';
-$cin_pass_selected_client = isset($_GET['cin_pass_selected_client']) ? htmlspecialchars($_GET['cin_pass_selected_client'], ENT_QUOTES, 'UTF-8') : '';
-$email_selected_client = isset($_GET['email_selected_client']) ? htmlspecialchars($_GET['email_selected_client'], ENT_QUOTES, 'UTF-8') : '';
-$tel_selected_client = isset($_GET['tel_selected_client']) ? htmlspecialchars($_GET['tel_selected_client'], ENT_QUOTES, 'UTF-8') : '';
-$magasin_selected_client = isset($_GET['magasin_selected_client']) ? htmlspecialchars($_GET['magasin_selected_client'], ENT_QUOTES, 'UTF-8') : '';
-$ville_selected_client = isset($_GET['ville_selected_client']) ? htmlspecialchars($_GET['ville_selected_client'], ENT_QUOTES, 'UTF-8') : '';
-
-/////////////////////////////////////////////////////ajouter
 // Traitement lors de l'ajout d'un client
 if(!empty($_GET['Ajouter'])) {
     // Vérification des champs obligatoires
@@ -147,6 +132,11 @@ if(!empty($_GET['Ajouter'])) {
                 // Suppression du "prompt_ncl"
                 $db->update("users", $id_user, ["prompt_ncl" => 0]);
 
+
+
+
+
+
                 // Envoi de l'email de confirmation avec le login et le mot de passe
                 $subject = "Votre mot de passe @EspaceMoto";
                 $body = "Login: " . $username . " / Mot de passe: " . $password;
@@ -154,28 +144,21 @@ if(!empty($_GET['Ajouter'])) {
 ///oooooooooooooooooooooooooooooooooooooooooooooPOUR DEV A SUPRIMER///oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
                 email("nclteck@gmail.com",$subject, $body);
 ///ooooooooooooooooooooooooooooooooooooooooooooPOUR DEV A SUPRIMER///oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-////////////// pointage sur le nouveau ajout pour affichage
-$query = $db->query("SELECT * FROM users WHERE cin_pass = ?",[$cin_pass]);
-$results = $query->results();
-$id_client= $results[0]->id;
-$searchTerm = $cin_pass;
-//////////////  fin pointage sur le nouveau ajout pour affichage
+
 
                 // Redirection après ajout
-
-               Redirect::to("clients.php?search=$searchTerm&id_client=$id_client.php");
+                Redirect::to("clients.php");
               //  logger($user->data()->id, "Ajout Article", "a ajouté $nom $code_interne");
             }
         }
     }
-}/////////////////////////////////////////////// fin ajouter
-
+}
+//////////////////////////////////////// fin ajout /////////////////////////////////////////////////////////////
 //////////////////////////////////////// Recherche /////////////////////////////////////////////////////////////
 
 
 //$results_client = [];
 //$count_client = 0;
-
 
 if(Input::exists('get') && !empty(Input::get('search'))) {
     $searchTerm = trim(Input::get('search'));
@@ -199,14 +182,14 @@ if(Input::exists('get') && !empty(Input::get('search'))) {
 //$query_client = $db->query("SELECT * FROM users WHERE cin_pass = ? and permissions = ? or cin_pass = ? and permissions = ?",[$searchTerm, 1, $searchTerm, 6]);
 $count_client = $query_client->count();
 $results_client = $query_client->results();
-//print_r($results_client);
+
 // Log de la recherche
 //logger($user->data()->id, "Recherche article", "Recherche pour $searchTerm");
 
 // Remplissage des informations si un client est trouvé
 if ($count_client > 0) {
-  //  $mode = 1; // Mode modification
-    //$id_client = $results_client[0]->id;
+    $mode = 1; // Mode modification
+    $id_client = $results_client[0]->id;
     $cin_pass = $results_client[0]->cin_pass;
     $lname = $results_client[0]->lname;
     $fname = $results_client[0]->fname;
@@ -217,16 +200,15 @@ if ($count_client > 0) {
     $email = $results_client[0]->email;
     $tel = $results_client[0]->tel;
     $ville = $results_client[0]->ville;
-
-    }
 }
 
 
-////////////////////////////////////// fin rechercher
-//////////////////////////////////////// mode modif et suprimer /////////////////////////////////////////////////////////////
+
+
+}
 if ($mode==4) {
 
-
+//////////////////////////////////////// fin  Recherche /////////////////////////////////////////////////////////////
 //////////////////////////////////////// Supprimer /////////////////////////////////////////////////////////////
 
 if(!empty($_GET['Supprimer'])){
@@ -242,15 +224,10 @@ if(!empty($_GET['Supprimer'])){
     $db->query("DELETE FROM user_permission_matches WHERE id = ?",[$id_permission2]);
     $db->query("DELETE FROM users WHERE id = ?",[$id_user]);
 
-    //$mode = 1; // Mode modification
-
-                    // Redirection après ajout
-
-                   Redirect::to("clients.php?search=$searchTerm");
-                  //  logger($user->data()->id, "Ajout Article", "a ajouté $nom $code_interne");
+    $mode = 1; // Mode modification
     Redirect::to("clients.php");
 }
-
+//////////////////////////////////////// fin suprimer /////////////////////////////////////////////////////////////
 //////////////////////////////////////// Modifier /////////////////////////////////////////////////////////////
 
 if(!empty($_GET['Modifier'])){
@@ -264,7 +241,7 @@ if(!empty($_GET['Modifier'])){
     $cin_pass = Input::get('cin_pass');
     $magasin = Input::get('magasin');
     $date = date("Y/m/d");
-    //$mode = 1;
+    $mode = 1;
     $email = Input::get('email');
     $ville = Input::get('ville');
     $tel = Input::get('tel');
@@ -341,56 +318,35 @@ if(!empty($_GET['Modifier'])){
                     'ville' => $ville,
                 ];
                 $db->update('users', $id_user, $fields);
-
-
-
-                ////////////// pointage sur le nouveau ajout pour affichage
-                $query = $db->query("SELECT * FROM users WHERE cin_pass = ?",[$cin_pass]);
-                $results = $query->results();
-                $id_client= $results[0]->id;
-              //  $searchTerm = $cin_pass;
-                //////////////  fin pointage sur le nouveau ajout pour affichage
-
-                                // Redirection après ajout
-
-                               Redirect::to("clients.php?search=$searchTerm&id_client=$id_client.php");
-                              //  logger($user->data()->id, "Ajout Article", "a ajouté $nom $code_interne");
-
+                Redirect::to("clients.php");
             }
         }
     }
 }
-}////////////////////////////////////// fin mode 4 modifier et suprimeer
+}////////////////////////////////////// fin modifier
 
-////////////////////////////////////// selected_client///////////////////////////////////////////
 
-if(!empty($_GET['id_client'])){
-  //  print_r("id_client");
-  //  print_r($id_client);
-    $query_selected_client = $db->query("SELECT * FROM users  WHERE  id = ?",[$id_client]);
-    $count_selected_client = $query_selected_client->count();
-    $results_selected_client = $query_selected_client->results();
 
-    // Log de la recherche
-    //logger($user->data()->id, "Recherche article", "Recherche pour $searchTerm");
+/////////////////////////// selected_client
+$query_selected_client = $db->query("SELECT * FROM users  WHERE  id = ?",[$id_client]);
+$count_selected_client = $query_selected_client->count();
+$results_selected_client = $query_selected_client->results();
 
-    // Remplissage des informations si un client est trouvé
-    if ($count_selected_client > 0) {
+if ($count_selected_client > 0) {
 
-        $id_client_selected_client = $results_selected_client[0]->id;
-        $cin_pass_selected_client = $results_selected_client[0]->cin_pass;
-        $lname_selected_client = $results_selected_client[0]->lname;
-        $fname_selected_client = $results_selected_client[0]->fname;
-        $raison_sociale_selected_client = $results_selected_client[0]->raison_sociale;
-        $ice_selected_client = $results_selected_client[0]->ice;
-        $habilitation_selected_client = $results_selected_client[0]->habilitation;
-        $magasin_selected_client = $results_selected_client[0]->magasin;
-        $email_selected_client = $results_selected_client[0]->email;
-        $tel_selected_client = $results_selected_client[0]->tel;
-        $ville_selected_client = $results_selected_client[0]->ville;
-    }
+    $id_client = $results_selected_client[0]->id;
+    $cin_pass_selected_client = $results_selected_client[0]->cin_pass;
+    $lname_selected_client = $results_selected_client[0]->lname;
+    $fname_selected_client = $results_selected_client[0]->fname;
+    $raison_sociale_selected_client = $results_selected_client[0]->raison_sociale;
+    $ice_selected_client = $results_selected_client[0]->ice;
+    $habilitation_selected_client = $results_selected_client[0]->habilitation;
+    $magasin_selected_client = $results_selected_client[0]->magasin;
+    $email_selected_client = $results_selected_client[0]->email;
+    $tel_selected_client = $results_selected_client[0]->tel;
+    $ville_selected_client = $results_selected_client[0]->ville;
 }
-////////////////////////////////////// fin selected_client///////////////////////////////////////////
+
 ?>
 
 <!-- Formulaire HTML pour la gestion des clients -->
@@ -473,12 +429,16 @@ if(!empty($_GET['id_client'])){
 
 
 
-        $query_all_client = $query_client;
-        $count_all_client = $query_all_client->count();
-        $results_all_client = $query_all_client->results();
-//print_r("results_client");
-//print_r($results_client);
+          $query_all_client = $query_client;
 
+
+    //      $query_all_client = $db->query("SELECT * FROM users  WHERE  permissions = ? or permissions = ?",[1,6]);
+          $count_all_client = $query_all_client->count();
+          $results_all_client = $query_all_client->results();
+        //	$id_client = $results_client[0]->id;
+        //	$id_user = $results_client[0]->id_user;
+
+  //print_r($results_all_client);
         ?>
 
 
@@ -507,7 +467,7 @@ if(!empty($_GET['id_client'])){
               </tr>
             </thead>
             <tbody>
-              <?php foreach ($results_client as $r) { ?>
+              <?php foreach ($results_all_client as $r) { ?>
                 <tr>
                   <td><?=$r->id?></td>
                   <td><?=$r->fname?></td>
@@ -521,7 +481,7 @@ if(!empty($_GET['id_client'])){
                   <td><?=$r->magasin?></td>
                   <td><?=$r->ville?></td>
                   <td>
-                    <a href="clients.php?search=<?=$searchTerm?>&id_client=<?=$r->id?>">Select</a>
+                    <a href="clients.php?searchTerm=<?=$searchTerm?>&id_client=<?=$r->id?>">Select</a>
                   </td>
                 </tr>
               <?php }  } ?>

@@ -7,7 +7,7 @@ if (!securePage($_SERVER['PHP_SELF'])) {
 }
 if(hasPerm([2,3,5],$user->data()->id)){$mode = 1;}// 0 saisie 1 mode modification}// 2 admin 3 gestionaire 5 controler
 if(hasPerm([4],$user->data()->id)){$mode = 0;}// 0 saisie 1 mode modification}// 2 admin 3 gestionaire 5 controler
-
+$mode=1;
 // Récupération des paramètres GET
 
 
