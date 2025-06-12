@@ -5,9 +5,10 @@ require_once $abs_us_root.$us_url_root.'users/includes/template/prep.php';
 if (!securePage($_SERVER['PHP_SELF'])) {
     die("Accès interdit !");
 }
+$errors = [];
 if(hasPerm([2,3,5],$user->data()->id)){$mode = 1;}// 0 saisie 1 mode modification}// 2 admin 3 gestionaire 5 controler
 if(hasPerm([4],$user->data()->id)){$mode = 0;}// 0 saisie 1 mode modification}// 2 admin 3 gestionaire 5 controler
-$mode=1;
+//$mode=1;
 // Récupération des paramètres GET
 
 
@@ -81,19 +82,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 															if($count_id_product <= 0){ // cas impossible c est un ajout
 
-																$fields_modifier = array(
-																	"categorie"=>$categorie,
-																	"marque"=>$marque,
-																	"modele"=>$modele,
-																	"version"=>$version,
-																	"couleur"=>$couleur,
-																	"vin"=>$vin,
-																	"entrepot"=>$entrepot,
-                                  "status"=>$status,
+	                           
+                                  $errors[] = "Vous ne pouvez pas modifier un Produit qui n'existe pas veuillez faire un ajout";
 
-																);
 
-																	$db->update("produits",$id_produit,$fields_modifier);
+
+                            //		$fields_modifier = array(
+														//			"categorie"=>$categorie,
+														//			"marque"=>$marque,
+														//			"modele"=>$modele,
+														//			"version"=>$version,
+														//			"couleur"=>$couleur,
+														//			"vin"=>$vin,
+														//			"entrepot"=>$entrepot,
+                            //      "status"=>$status,
+
+														//		);
+
+																//	$db->update("produits",$id_produit,$fields_modifier);
 
                               }else{
 																$id_produit = $results_id_product[0]->id;
@@ -442,7 +448,7 @@ $results = $query->results();
 										<label>Entrepot</label>
 										<input type="text" name="entrepot" class="form-control" value="<?= $entrepot ?>" required>
 								</div>
-
+<!--
                 <div class="col-auto">
                   <label for="status">Status</label>
                   <select name="status" id="status" class="form-control" required>
@@ -452,7 +458,7 @@ $results = $query->results();
                       <option value="Vendu" <?= $status === 'Vendu' ? 'selected' : '' ?>>Vendu</option>
                   </select>
               </div>
-
+-->
 
 
 
@@ -482,7 +488,7 @@ $results = $query->results();
     </div>
     </div>
 
-<?php } ?>
+<?php } display_errors($errors);?>
 
 
 
