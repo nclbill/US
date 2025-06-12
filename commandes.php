@@ -23,7 +23,7 @@ $result2 = $db->query("
 ///////////////////////////////////////////////////////////
 
 if(hasPerm([2,3,5,7],$user->data()->id)){$mode = 5;}// 1 user 4 saisie 5 controleur mode modification}// 2 admin 3 gestionaire 6 client  7 commercial
-if(hasPerm([6],$user->data()->id)){$mode = 6;}// 6 client
+if(hasPerm([6,4],$user->data()->id)){$mode = 6;}// 6 client 4 opp saisi
 
 ///////////////////////dinamique
 $searchTerm1_categorie = Input::get('searchTerm1_categorie');
@@ -392,7 +392,7 @@ $expirationLimit = date('Y-m-d H:i:s', strtotime("-{$expirationMinutes} minutes"
                 try {
                     // Démarrer la transaction
                     $db->query("START TRANSACTION");
-
+print_r("ssssss");
                     // Sélectionner le produit disponible avec verrouillage
                     $stmt = $db->query("SELECT id FROM produits WHERE
                         categorie = ? AND
@@ -510,10 +510,10 @@ $expirationLimit = date('Y-m-d H:i:s', strtotime("-{$expirationMinutes} minutes"
     <h3>Pièces justificatives</h3>
 
     <label>CIN / Passeport Recto :</label>
-    <input type="file" name="cin_pass_recto_acheteur" accept=".jpg, .jpeg, .png, .gif, .pdf, .docx" required><br>
+    <input type="file" name="cin_pass_recto_acheteur" accept=".jpg, .jpeg, .png, .gif, .pdf" required><br>
 
     <label>CIN / Passeport Verso :</label>
-    <input type="file" name="cin_pass_verso_acheteur" accept=".jpg, .jpeg, .png, .gif, .pdf, .docx" required><br>
+    <input type="file" name="cin_pass_verso_acheteur" accept=".jpg, .jpeg, .png, .gif, .pdf" required><br>
 
     <button type="submit">Envoyer la commande</button>
 </form>

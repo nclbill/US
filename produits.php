@@ -23,8 +23,7 @@ $entrepot = Input::get('entrepot');
 $id_client = $user->data()->id;
 $search_vin = Input::get('search_vin');
 $status=Input::get('status');
-//$id_produit = Input::get('id_produit');
-//print_r($id_produit);
+
 // Traitement du formulaire
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $action = Input::get('action');
@@ -50,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 				$count_vin = $query_vin->count();
 
 					if($count_vin > 0){
-						$err = array("VIN existe deja parmi vos Produits A");
+						$err = array("VIN existe deja parmi vos Produits Archives ou Non Archives");
 							display_errors($err);
 
 				} else {
@@ -75,14 +74,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }elseif ($action == 'modifier' && !empty($entrepot)) {
 
 
-															$query_id_product = $db->query("SELECT id FROM produits WHERE vin = ?", [$searchTerm6_vin]);
+															$query_id_product = $db->query("SELECT id FROM produits WHERE vin = ? and archive = ?", [$searchTerm6_vin,0]);
 															$count_id_product = $query_id_product->count();
 															$results_id_product = $query_id_product->results();
 
 
 															if($count_id_product <= 0){ // cas impossible c est un ajout
 
-	                           
+
                                   $errors[] = "Vous ne pouvez pas modifier un Produit qui n'existe pas veuillez faire un ajout";
 
 
@@ -109,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 //print_r("vin exist");
 //print_r($results_vin_nbr);
 																					if($count_vin_nbr > 0){
-																						$err = array("VIN existe deja parmi vos Produits");
+																						$err = array("VIN existe deja parmi vos Produits Archives ou Non Archives");
 																							display_errors($err);
 
 																				  }else{
@@ -122,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 																							"couleur"=>$couleur,
 																							"vin"=>$vin,
 																							"entrepot"=>$entrepot,
-                                              "status"=>$status,
+                                            //  "status"=>$status,
 
 																						);
 
@@ -151,42 +150,46 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $status = $status;
     $id_client = $user->data()->id;
 }
-// search
-if(!empty($_GET['search'])){
-  $search_vin = Input::get('search');
-
-
-$query_search_vin = $db->query("SELECT * FROM produits WHERE vin = ?",[$search_vin]);
-$count_search_vin = $query_search_vin->count();
-$results_search_vin = $query_search_vin->results();
-
+          // search
+          if(!empty($_GET['search'])){
+                  $search_vin = Input::get('search');
+                  $query_search_vin = $db->query("SELECT * FROM produits WHERE vin = ?",[$search_vin]);
+                  $count_search_vin = $query_search_vin->count();
+                  $results_search_vin = $query_search_vin->results();
 
 
 
-//logger($user->data()->id, "Search article", "Searched for $searchTerm");
-
-if ($count_search_vin > 0) {
 
 
-$id_produit = $results_search_vin[0]->id;
-$searchTerm1_categorie = $results_search_vin[0]->categorie;
-$searchTerm2_marque = $results_search_vin[0]->marque;
-$searchTerm3_modele = $results_search_vin[0]->modele;
-$searchTerm4_version = $results_search_vin[0]->version;
-$searchTerm5_couleur = $results_search_vin[0]->couleur;
-$searchTerm6_vin = $results_search_vin[0]->vin;
-$entrepot = $results_search_vin[0]->entrepot;
-$status = $results_search_vin[0]->status;
-$id_client = $user->data()->id;
+          //logger($user->data()->id, "Search article", "Searched for $searchTerm");
 
-}else {
-  $err = array("VIN n'existe pas");
-    display_errors($err);
-}
-}
+                          if ($count_search_vin > 0) {
+                                    $vin_archive = $results_search_vin[0]->archive;
+                                    if ($vin_archive = 1){
+                                               $err = array("Produit Archive");
+                                              display_errors($err);
+                                    }else{
+                                      $id_produit = $results_search_vin[0]->id;
+                                      $searchTerm1_categorie = $results_search_vin[0]->categorie;
+                                      $searchTerm2_marque = $results_search_vin[0]->marque;
+                                      $searchTerm3_modele = $results_search_vin[0]->modele;
+                                      $searchTerm4_version = $results_search_vin[0]->version;
+                                      $searchTerm5_couleur = $results_search_vin[0]->couleur;
+                                      $searchTerm6_vin = $results_search_vin[0]->vin;
+                                      $entrepot = $results_search_vin[0]->entrepot;
+                                      $status = $results_search_vin[0]->status;
+                                      $id_client = $user->data()->id;
+                                    }
+
+
+                              }else{
+                                    $err = array("VIN n'existe pas");
+                                      display_errors($err);
+                              }
+          }
 
 // Récupération des catégories
-$query = $db->query("SELECT DISTINCT categorie FROM produits", []);
+$query = $db->query("SELECT DISTINCT categorie FROM produits where archive = ?", [0]);
 $count = $query->count();
 $results = $query->results();
 ?>
@@ -223,7 +226,7 @@ $results = $query->results();
 
             <!-- Colonne des Marques (si une catégorie est sélectionnée) -->
             <?php if (!empty($searchTerm1_categorie)) {
-                $query2 = $db->query("SELECT DISTINCT marque FROM produits WHERE categorie = ?", [$searchTerm1_categorie]);
+                $query2 = $db->query("SELECT DISTINCT marque FROM produits WHERE categorie = ? and archive = ?", [$searchTerm1_categorie,0]);
                 $count2 = $query2->count();
                 $results2 = $query2->results();
             ?>
@@ -249,7 +252,7 @@ $results = $query->results();
 
             <!-- Colonne des Modèles (si une marque est sélectionnée) -->
             <?php if (!empty($searchTerm2_marque)) {
-                $query3 = $db->query("SELECT DISTINCT modele FROM produits WHERE categorie = ? and marque = ?", [$searchTerm1_categorie,$searchTerm2_marque]);
+                $query3 = $db->query("SELECT DISTINCT modele FROM produits WHERE categorie = ? and marque = ? and archive = ?", [$searchTerm1_categorie,$searchTerm2_marque,0]);
                 $count3 = $query3->count();
                 $results3 = $query3->results();
             ?>
@@ -275,7 +278,7 @@ $results = $query->results();
 
             <!-- Colonne des Versions (si un modèle est sélectionné) -->
             <?php if (!empty($searchTerm3_modele)) {
-                $query4 = $db->query("SELECT DISTINCT version FROM produits WHERE categorie = ? and marque = ? and modele= ?", [$searchTerm1_categorie,$searchTerm2_marque,$searchTerm3_modele]);
+                $query4 = $db->query("SELECT DISTINCT version FROM produits WHERE categorie = ? and marque = ? and modele= ? and archive = ?", [$searchTerm1_categorie,$searchTerm2_marque,$searchTerm3_modele,0]);
                 $count4 = $query4->count();
                 $results4 = $query4->results();
             ?>
@@ -301,7 +304,7 @@ $results = $query->results();
 
             <!-- Colonne des Couleurs (si une version est sélectionnée) -->
             <?php if (!empty($searchTerm4_version)) {
-                $query5 = $db->query("SELECT DISTINCT couleur FROM produits WHERE categorie = ? and marque = ? and modele= ? and version = ?", [$searchTerm1_categorie,$searchTerm2_marque,$searchTerm3_modele,$searchTerm4_version]);
+                $query5 = $db->query("SELECT DISTINCT couleur FROM produits WHERE categorie = ? and marque = ? and modele= ? and version = ? and archive = ?", [$searchTerm1_categorie,$searchTerm2_marque,$searchTerm3_modele,$searchTerm4_version,0]);
                 $count5 = $query5->count();
                 $results5 = $query5->results();
             ?>
@@ -327,7 +330,7 @@ $results = $query->results();
 
             <!-- Colonne des VIN (si une couleur est sélectionnée) -->
             <?php if (!empty($searchTerm5_couleur)) {
-                $query6 = $db->query("SELECT * FROM produits WHERE categorie = ? and marque = ? and modele= ? and version = ? and couleur = ?", [$searchTerm1_categorie,$searchTerm2_marque,$searchTerm3_modele,$searchTerm4_version,$searchTerm5_couleur]);
+                $query6 = $db->query("SELECT * FROM produits WHERE categorie = ? and marque = ? and modele= ? and version = ? and couleur = ? and archive = ?", [$searchTerm1_categorie,$searchTerm2_marque,$searchTerm3_modele,$searchTerm4_version,$searchTerm5_couleur,0]);
               //  $query6 = $db->query("SELECT DISTINCT vin FROM produits WHERE categorie = ? and marque = ? and modele= ? and version = ? and couleur = ?", [$searchTerm1_categorie,$searchTerm2_marque,$searchTerm3_modele,$searchTerm4_version,$searchTerm5_couleur]);
                 $count6 = $query6->count();
                 $results6 = $query6->results();
@@ -448,17 +451,7 @@ $results = $query->results();
 										<label>Entrepot</label>
 										<input type="text" name="entrepot" class="form-control" value="<?= $entrepot ?>" required>
 								</div>
-<!--
-                <div class="col-auto">
-                  <label for="status">Status</label>
-                  <select name="status" id="status" class="form-control" required>
-                      <option value="" disabled <?= empty($status) ? 'selected' : '' ?>><?= $status ?></option>
-                      <option value="disponible" <?= $status === 'disponible' ? 'selected' : '' ?>>disponible</option>
-                      <option value="reserve" <?= $status === 'reserve' ? 'selected' : '' ?>>reserve</option>
-                      <option value="Vendu" <?= $status === 'Vendu' ? 'selected' : '' ?>>Vendu</option>
-                  </select>
-              </div>
--->
+
 
 
 
