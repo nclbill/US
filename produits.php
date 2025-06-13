@@ -23,6 +23,7 @@ $entrepot = Input::get('entrepot');
 $id_client = $user->data()->id;
 $search_vin = Input::get('search_vin');
 $status=Input::get('status');
+$numero_commande_achat=Input::get('numero_commande_achat');
 
 // Traitement du formulaire
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -36,6 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		$entrepot = Input::get('entrepot');
     $id_produit = Input::get('id_produit');
     $status=Input::get('status');
+    $numero_commande_achat=Input::get('numero_commande_achat');
+
     // Ajouter un produit
 
 
@@ -62,7 +65,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 						"couleur"=>$couleur,
 						"vin"=>$vin,
 						"entrepot"=>$entrepot,
+            "numero_commande_achat"=>$numero_commande_achat,
             "status"=>"disponible",
+
 
 									);
 
@@ -121,6 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 																							"couleur"=>$couleur,
 																							"vin"=>$vin,
 																							"entrepot"=>$entrepot,
+                                              "numero_commande_achat"=>$numero_commande_achat,
                                             //  "status"=>$status,
 
 																						);
@@ -148,6 +154,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $searchTerm6_vin = $vin;
     $entrepot = $entrepot;
     $status = $status;
+    $numero_commande_achat = $numero_commande_achat;
+
     $id_client = $user->data()->id;
 }
           // search
@@ -179,6 +187,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                       $entrepot = $results_search_vin[0]->entrepot;
                                       $status = $results_search_vin[0]->status;
                                       $id_client = $user->data()->id;
+                                      $numero_commande_achat = $results_search_vin[0]->numero_commande_achat;
+
+
                                     }
 
 
@@ -343,6 +354,7 @@ $results = $query->results();
 													<th><?=$count6?> VIN <?php if ($count6 != 1) echo "s"; ?></th>
 												  <th>Entrepot</th>
                           <th>Status</th>
+                          <th>N Cmd Acht</th>
 
 												</tr>
                     </thead>
@@ -352,7 +364,7 @@ $results = $query->results();
                             <tr>
 
                                 <td style="background-color: <?= ($searchTerm6_vin == $r6->vin) ? '#ADD8e6' : '' ?>">
-                                    <a href="produits.php?searchTerm1_categorie=<?= urlencode($searchTerm1_categorie) ?>&searchTerm2_marque=<?= urlencode($searchTerm2_marque) ?>&searchTerm3_modele=<?= urlencode($searchTerm3_modele) ?>&searchTerm4_version=<?= urlencode($searchTerm4_version) ?>&searchTerm5_couleur=<?= urlencode($searchTerm5_couleur) ?>&searchTerm6_vin=<?= urlencode($r6->vin)?>&entrepot=<?= urlencode($r6->entrepot) ?>&status=<?= urlencode($r6->status) ?>&id_produit=<?= urlencode($r6->id) ?>">
+                                    <a href="produits.php?searchTerm1_categorie=<?= urlencode($searchTerm1_categorie) ?>&searchTerm2_marque=<?= urlencode($searchTerm2_marque) ?>&searchTerm3_modele=<?= urlencode($searchTerm3_modele) ?>&searchTerm4_version=<?= urlencode($searchTerm4_version) ?>&searchTerm5_couleur=<?= urlencode($searchTerm5_couleur) ?>&searchTerm6_vin=<?= urlencode($r6->vin)?>&entrepot=<?= urlencode($r6->entrepot) ?>&status=<?= urlencode($r6->status) ?>&numero_commande_achat=<?= urlencode($r6->numero_commande_achat) ?>&id_produit=<?= urlencode($r6->id) ?>">
                                         <?= htmlspecialchars($r6->vin) ?>
                                     </a>
 																</td>
@@ -367,7 +379,11 @@ $results = $query->results();
                                       <?= htmlspecialchars($r6->status) ?>
                                   </a>
                                 </td>
-
+                                <td style="background-color: <?= ($numero_commande_achat == $r6->$numero_commande_achat) ? '' : '' ?>">
+                                  <?php /*<a href="produits.php?searchTerm1_categorie=<?= urlencode($searchTerm1_categorie) ?>&searchTerm2_marque=<?= urlencode($searchTerm2_marque) ?>&searchTerm3_modele=<?= urlencode($searchTerm3_modele) ?>&searchTerm4_version=<?= urlencode($searchTerm4_version) ?>&searchTerm5_couleur=<?= urlencode($searchTerm5_couleur) ?>&searchTerm6_vin=<?= urlencode($r6->vin)?>&entrepot=<?= urlencode($r6->entrepot) ?>">  */?>
+                                      <?= htmlspecialchars($r6->numero_commande_achat) ?>
+                                  </a>
+                                </td>
 
                             </tr>
                         <?php } ?>
@@ -420,6 +436,7 @@ $results = $query->results();
 						<input type="hidden" name="searchTerm6_vin" value="<?=$searchTerm6_vin ?>">
             <input type="hidden" name="entrepot" value="<?=$entrepot ?>">
             <input type="hidden" name="status" value="<?=$status ?>">
+            <input type="hidden" name="numero_commande_achat" value="<?=$numero_commande_achat ?>">
 
 
 
@@ -451,13 +468,17 @@ $results = $query->results();
 										<label>Entrepot</label>
 										<input type="text" name="entrepot" class="form-control" value="<?= $entrepot ?>" required>
 								</div>
+                <div class="col-auto">
+                    <label>N Cmd Acht</label>
+                    <input type="text" name="numero_commande_achat" class="form-control" value="<?= $numero_commande_achat ?>" required>
+                </div>
 
 
 
 
 		        <br>
 		        <button type="submit" name="action" value="ajouter" class="btn btn-primary">Ajouter</button>
-            <?php if ($mode==1): ?>
+            <?php if ($mode=1): ?>
               <button type="submit" name="action" value="modifier" class="btn btn-warning" <?= empty($r6->vin) ? 'disabled' : '' ?>>Modifier</button>
               <button type="submit" name="action" value="supprimer" class="btn btn-danger" <?= empty($r6->vin) ? 'disabled' : '' ?>>Supprimer</button>
             <?php endif; ?>
