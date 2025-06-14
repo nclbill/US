@@ -161,6 +161,7 @@ if (!empty($message)) {
                     <?= "{$commande->categorie} / {$commande->marque} / {$commande->modele} / {$commande->version} / {$commande->couleur}" ?><br>
                     Entrepôt : <?= $commande->entrepot ?><br>
                     Produit ID : <?= $commande->produit_id ?><br>
+                    Commande ID : <?= $commande->id ?><br>
                     Statut : <?= $commande->produit_status ?><br>
                     Réservé jusqu'au :<br> <?= $commande->delai ?>
                 </td>
