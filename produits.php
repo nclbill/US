@@ -198,9 +198,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                       display_errors($err);
                               }
           }
-
+//archive 0 non archive disponible
+//archive 1 archive disparee
+//archive 2 pour garder les nom pour la saisie
 // Récupération des catégories
-$query = $db->query("SELECT DISTINCT categorie FROM produits where archive = ?", [0]);
+$query = $db->query("SELECT DISTINCT categorie FROM produits where archive = ? or archive = ?", [0,2]);
 $count = $query->count();
 $results = $query->results();
 ?>
@@ -237,7 +239,7 @@ $results = $query->results();
 
             <!-- Colonne des Marques (si une catégorie est sélectionnée) -->
             <?php if (!empty($searchTerm1_categorie)) {
-                $query2 = $db->query("SELECT DISTINCT marque FROM produits WHERE categorie = ? and archive = ?", [$searchTerm1_categorie,0]);
+                $query2 = $db->query("SELECT DISTINCT marque FROM produits WHERE categorie = ? and archive = ? or categorie = ? and archive = ?", [$searchTerm1_categorie,0,$searchTerm1_categorie,2]);
                 $count2 = $query2->count();
                 $results2 = $query2->results();
             ?>
@@ -263,7 +265,7 @@ $results = $query->results();
 
             <!-- Colonne des Modèles (si une marque est sélectionnée) -->
             <?php if (!empty($searchTerm2_marque)) {
-                $query3 = $db->query("SELECT DISTINCT modele FROM produits WHERE categorie = ? and marque = ? and archive = ?", [$searchTerm1_categorie,$searchTerm2_marque,0]);
+                $query3 = $db->query("SELECT DISTINCT modele FROM produits WHERE categorie = ? and marque = ? and archive = ? or categorie = ? and marque = ? and archive = ?", [$searchTerm1_categorie,$searchTerm2_marque,0,$searchTerm1_categorie,$searchTerm2_marque,2]);
                 $count3 = $query3->count();
                 $results3 = $query3->results();
             ?>
@@ -289,7 +291,7 @@ $results = $query->results();
 
             <!-- Colonne des Versions (si un modèle est sélectionné) -->
             <?php if (!empty($searchTerm3_modele)) {
-                $query4 = $db->query("SELECT DISTINCT version FROM produits WHERE categorie = ? and marque = ? and modele= ? and archive = ?", [$searchTerm1_categorie,$searchTerm2_marque,$searchTerm3_modele,0]);
+                $query4 = $db->query("SELECT DISTINCT version FROM produits WHERE categorie = ? and marque = ? and modele= ? and archive = ? or categorie = ? and marque = ? and modele= ? and archive = ?", [$searchTerm1_categorie,$searchTerm2_marque,$searchTerm3_modele,0,$searchTerm1_categorie,$searchTerm2_marque,$searchTerm3_modele,2]);
                 $count4 = $query4->count();
                 $results4 = $query4->results();
             ?>
@@ -315,7 +317,7 @@ $results = $query->results();
 
             <!-- Colonne des Couleurs (si une version est sélectionnée) -->
             <?php if (!empty($searchTerm4_version)) {
-                $query5 = $db->query("SELECT DISTINCT couleur FROM produits WHERE categorie = ? and marque = ? and modele= ? and version = ? and archive = ?", [$searchTerm1_categorie,$searchTerm2_marque,$searchTerm3_modele,$searchTerm4_version,0]);
+                $query5 = $db->query("SELECT DISTINCT couleur FROM produits WHERE categorie = ? and marque = ? and modele= ? and version = ? and archive = ? or categorie = ? and marque = ? and modele= ? and version = ? and archive = ?", [$searchTerm1_categorie,$searchTerm2_marque,$searchTerm3_modele,$searchTerm4_version,0,$searchTerm1_categorie,$searchTerm2_marque,$searchTerm3_modele,$searchTerm4_version,2]);
                 $count5 = $query5->count();
                 $results5 = $query5->results();
             ?>
@@ -341,7 +343,7 @@ $results = $query->results();
 
             <!-- Colonne des VIN (si une couleur est sélectionnée) -->
             <?php if (!empty($searchTerm5_couleur)) {
-                $query6 = $db->query("SELECT * FROM produits WHERE categorie = ? and marque = ? and modele= ? and version = ? and couleur = ? and archive = ?", [$searchTerm1_categorie,$searchTerm2_marque,$searchTerm3_modele,$searchTerm4_version,$searchTerm5_couleur,0]);
+                $query6 = $db->query("SELECT * FROM produits WHERE categorie = ? and marque = ? and modele= ? and version = ? and couleur = ? and archive = ? or categorie = ? and marque = ? and modele= ? and version = ? and couleur = ? and archive = ?", [$searchTerm1_categorie,$searchTerm2_marque,$searchTerm3_modele,$searchTerm4_version,$searchTerm5_couleur,0,$searchTerm1_categorie,$searchTerm2_marque,$searchTerm3_modele,$searchTerm4_version,$searchTerm5_couleur,2]);
               //  $query6 = $db->query("SELECT DISTINCT vin FROM produits WHERE categorie = ? and marque = ? and modele= ? and version = ? and couleur = ?", [$searchTerm1_categorie,$searchTerm2_marque,$searchTerm3_modele,$searchTerm4_version,$searchTerm5_couleur]);
                 $count6 = $query6->count();
                 $results6 = $query6->results();
@@ -362,6 +364,8 @@ $results = $query->results();
                         <?php foreach ($results6 as $r6) {  ?>
 													<?php $id_client=$r6->id?>
                             <tr>
+<?php if ($r6->archive == 0): ?>
+
 
                                 <td style="background-color: <?= ($searchTerm6_vin == $r6->vin) ? '#ADD8e6' : '' ?>">
                                     <a href="produits.php?searchTerm1_categorie=<?= urlencode($searchTerm1_categorie) ?>&searchTerm2_marque=<?= urlencode($searchTerm2_marque) ?>&searchTerm3_modele=<?= urlencode($searchTerm3_modele) ?>&searchTerm4_version=<?= urlencode($searchTerm4_version) ?>&searchTerm5_couleur=<?= urlencode($searchTerm5_couleur) ?>&searchTerm6_vin=<?= urlencode($r6->vin)?>&entrepot=<?= urlencode($r6->entrepot) ?>&status=<?= urlencode($r6->status) ?>&numero_commande_achat=<?= urlencode($r6->numero_commande_achat) ?>&id_produit=<?= urlencode($r6->id) ?>">
@@ -384,7 +388,13 @@ $results = $query->results();
                                       <?= htmlspecialchars($r6->numero_commande_achat) ?>
                                   </a>
                                 </td>
+<?php else: ?>
+  <td>*</td>
 
+
+
+
+<?php endif; ?>
                             </tr>
                         <?php } ?>
                     </tbody>

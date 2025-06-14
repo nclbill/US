@@ -24,7 +24,8 @@ if(isset($user) && $user->isLoggedIn()){?>
 	<div class="container">
 <?php
 
-if(hasPerm([2],$user->data()->id)){$mode=6;// admin
+if(hasPerm([8],$user->data()->id)){$mode=6;// admin
+//	if(!hasPerm([2],$user->data()->id)){// pour ne pas etre afficher chez admin
 											?>
 											<div class="row">
 
@@ -79,13 +80,13 @@ if(hasPerm([2],$user->data()->id)){$mode=6;// admin
 											 						<!-- end 300SR -->
 
 												<?php
-} // end if permissions Admin
+}//}  // end if permissions Admin
 
 if(hasPerm([6],$user->data()->id)){$mode=6;// clients mode6
-	if(!hasPerm([2],$user->data()->id)){// pour ne pas etre afficher chez admin
+//	if(!hasPerm([2],$user->data()->id)){// pour ne pas etre afficher chez admin
 
 
-	} // pour ne pas etre afficher chez admin !hasPerm([2] mode2
+	//} // pour ne pas etre afficher chez admin !hasPerm([2] mode2
 } //  fin hasPerme clients mode6
 
 ///////// bolque vide a utiliser
@@ -102,6 +103,20 @@ if(hasPerm([6],$user->data()->id)){$mode=6;// clients mode6
 
 
 ?>
+<!-- Passer Une Commande -->
+<div class="card col-12 col-sm-6 col-md-4">
+	<h3 class="card-header"><strong><a href="commande-mobile.php.php">Passer Commande</strong></h3>
+		<div class="card-body">
+			<h4 class="card-title text-center"><div class="huge"> <i class='fa fa-book fa-1x'></i></div></h4>
+		</div>
+		<div class="card-footer">
+			<span class="pull-left">Entrer</span>
+			<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></a></span>
+		</div>
+	</div>
+<!-- Passer Une Commande -->
+
+
 
 					<div class="jumbotron">
 					<h1 align="center"><?=lang("JOIN_SUC");?> <?php echo $settings->site_name;?></h1>
@@ -110,12 +125,18 @@ if(hasPerm([6],$user->data()->id)){$mode=6;// clients mode6
 
 
 <?php }else{  /// si il  n' est pas logedin ?>
+
+
+
 					<div class="jumbotron">
 					<h1 align="center"><?=lang("JOIN_SUC");?> <?php echo $settings->site_name;?></h1>
 					<p align="center" class="text-muted"><?=lang("MAINT_OPEN")?></p>
 					<p align="center">
 					<a class="btn btn-warning" href="users/login.php" role="button"><?=lang("SIGNIN_TEXT");?> &raquo;</a>
 					<a class="btn btn-info" href="users/join.php" role="button"><?=lang("SIGNUP_TEXT");?> &raquo;</a>
+
+
+
 <?php }// end if is loged in?>
 
 
